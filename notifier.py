@@ -12,6 +12,7 @@ TODAY_STRING = date.today().strftime("%Y-%m-%d")
 YESTERDAY_STRING = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 if not os.path.isfile(f'{DATA_DIR}/{YESTERDAY_STRING}.json'):
+    print("There is no yesterday data file, you need to wait more")
     sys.exit(0)
 
 TODAY_FILE = open(f"{DATA_DIR}/{TODAY_STRING}.json", 'r').read()
