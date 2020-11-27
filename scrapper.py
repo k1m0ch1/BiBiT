@@ -5,6 +5,8 @@ import os
 from datetime import date
 from bs4 import BeautifulSoup
 
+print("Run the Scrapper")
+
 DATA_DIR = './data'
 TODAY_STRING = date.today().strftime("%Y-%m-%d")
 

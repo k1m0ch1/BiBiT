@@ -4,7 +4,7 @@ import json
 import requests
 from datetime import date, timedelta
 
-
+print("Run the Notifier")
 
 WEBHOOK_URL = "https://discordapp.com/api/webhooks/781911618702409748/QQ89_tlwWYuT-fUSEkUnPMmJDlH2ohn6rp8bbcIEhL2cHX_8fbLdtE5UGLZ4VbU4fjnR"
 DATA_DIR = './data'
