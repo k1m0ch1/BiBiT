@@ -40,3 +40,5 @@ for dataToday in data['today']:
                 print(f"{dataToday['name']} is Expensive {diff}")
 
 sendMessage = requests.post(WEBHOOK_URL, json=message, headers={"Content-Type": "application/json"})
+
+sys.exit(0)

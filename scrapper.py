@@ -2,6 +2,7 @@ import requests
 import re
 import json
 import os
+import sys
 from datetime import date
 from bs4 import BeautifulSoup
 
@@ -35,3 +36,5 @@ if not os.path.isdir(DATA_DIR):
 
 file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
 file_object.write(json.dumps(compiledData))
+
+sys.exit(0)
