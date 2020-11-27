@@ -1,0 +1,210 @@
+[
+    {
+        "pageName": "Hot Deals",
+        "pageType": "category",
+        "google_tag_params": {
+            "ecomm_pagetype": "category",
+            "ecomm_category": "Hot Deals"
+        },
+        "ecommerce": {
+            "currencyCode": "IDR",
+            "impressions": [
+                {
+                    "name": "Ayam Dada Utuh 400gr",
+                    "id": "63261",
+                    "price": "19350.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 1
+                },
+                {
+                    "name": "Ayam Fillet Dada 300gr",
+                    "id": "63268",
+                    "price": "17650.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 2
+                },
+                {
+                    "name": "Golden Mountain Wortel Brastagi Super 350gr",
+                    "id": "63301",
+                    "price": "6800.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 3
+                },
+                {
+                    "name": "Kimglass Espresso Cns Cs276_12-2gb_1c12b",
+                    "id": "129776",
+                    "price": "19900.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 4
+                },
+                {
+                    "name": "Besto Fish Roll 500gr (c20)",
+                    "id": "129775",
+                    "price": "23588.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 5
+                },
+                {
+                    "name": "Kanzler Beef Cocktail 250gr (c30)",
+                    "id": "129774",
+                    "price": "26588.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 6
+                },
+                {
+                    "name": "Saniter Air Sanitizer Aerosol 400ml",
+                    "id": "129660",
+                    "price": "34400.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 7
+                },
+                {
+                    "name": "Maen Main Mgc_01 Ayo Belajar Hijaiyah Ar_bbook Yos",
+                    "id": "129580",
+                    "price": "78400.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 8
+                },
+                {
+                    "name": "Maen Main Rnt_221 Card Game Dilan Tanya Yos",
+                    "id": "129579",
+                    "price": "65000.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 9
+                },
+                {
+                    "name": "Maen Main Map_19 Word Rush 2 Yos",
+                    "id": "129578",
+                    "price": "70000.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 10
+                },
+                {
+                    "name": "Subron Multifunction Pot Ss 22cm Pst_22 1c16p",
+                    "id": "129533",
+                    "price": "94500.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 11
+                },
+                {
+                    "name": "Foxs Coffee 90g_1c24p",
+                    "id": "129527",
+                    "price": "6250.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 12
+                },
+                {
+                    "name": "Foxs Mint Blossom 125g (1c=24pcs)",
+                    "id": "129526",
+                    "price": "6500.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 13
+                },
+                {
+                    "name": "Quantum Kompor Gas Hitam 1 Tungku Qgc101r???",
+                    "id": "129510",
+                    "price": "149900.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 14
+                },
+                {
+                    "name": "Maen Main Map_17 Word Rush Yos",
+                    "id": "129509",
+                    "price": "56000.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 15
+                }
+            ]
+        },
+        "event": "impression",
+        "eventCategory": "Ecommerce",
+        "eventAction": "Impression",
+        "eventLabel": "category Hot Deals"
+    },
+    {
+        "ecommerce": {
+            "currencyCode": "IDR",
+            "impressions": [
+                {
+                    "name": "Maen Main Map_24 Puzzle Akhlak_rukun Islam Yos",
+                    "id": "129507",
+                    "price": "63200.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 16
+                },
+                {
+                    "name": "Maen Main Map_23 Puzleakhlak_kalimat Thayyibah Yos",
+                    "id": "129506",
+                    "price": "56000.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 17
+                },
+                {
+                    "name": "Maen Main Map_16 Pairy Tales_whale And Friends Yos",
+                    "id": "129505",
+                    "price": "65000.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 18
+                },
+                {
+                    "name": "Maen Main Map_15 Pairy Tales_noahs Ark Yos",
+                    "id": "129504",
+                    "price": "65000.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 19
+                },
+                {
+                    "name": "Maen Main Map_21 Flash Card_human Body Yos",
+                    "id": "129503",
+                    "price": "52000.00",
+                    "brand": "",
+                    "category": "Hot Deals",
+                    "list": "Hot Deals",
+                    "position": 20
+                }
+            ]
+        },
+        "event": "impression",
+        "eventCategory": "Ecommerce",
+        "eventAction": "Impression",
+        "eventLabel": "category Hot Deals"
+    }
+]
