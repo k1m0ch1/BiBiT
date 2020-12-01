@@ -1,0 +1,19 @@
+[
+    "data": [
+        {
+            "name": "string",
+            "id": "string",
+            "price": "string",
+            "brand": "string nullable",
+            "category": "string enum",
+            "list": "string enum",
+            "position": int,
+            "link": "string",
+            "promotion": {
+                "type": "string enum discount/promo",
+                "description": "",
+                "original_price": ""
+            }
+        }
+    ]
+]

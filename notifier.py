@@ -5,9 +5,9 @@ import requests
 from datetime import date, timedelta
 
 def RunNotifier():
+    WEBHOOK_URL = "https://discordapp.com/api/webhooks/781911618702409748/QQ89_tlwWYuT-fUSEkUnPMmJDlH2ohn6rp8bbcIEhL2cHX_8fbLdtE5UGLZ4VbU4fjnR"
     print("Run the Notifier")
 
-    WEBHOOK_URL = "https://discordapp.com/api/webhooks/781911618702409748/QQ89_tlwWYuT-fUSEkUnPMmJDlH2ohn6rp8bbcIEhL2cHX_8fbLdtE5UGLZ4VbU4fjnR"
     DATA_DIR = './data'
     TODAY_STRING = date.today().strftime("%Y-%m-%d")
     YESTERDAY_STRING = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -24,19 +24,39 @@ def RunNotifier():
         'today': json.loads(TODAY_FILE)['data']
     }
 
-    message = {'content': ""}
+    item_message = ["Yogya Bot Price Today!\n Formula Yesterday - Today = Cheaper, Today - Yesterday = Expensive"]
 
     for dataToday in data['today']:
         for dataYesterday in data['yesterday']:
             if dataToday['id'] in dataYesterday['id']:
                 if float(dataYesterday['price']) > float(dataToday['price']):
                     diff = float(dataYesterday['price']) - float(dataToday['price'])
-                    message['content'] = f"{message['content']}\n{dataToday['name']} is Cheaper {diff}"
+                    curr_message = f"\n[{dataToday['name']}]({dataToday['link']}) is Cheaper {diff}"
+                    curr_message += f" {dataToday['promotion']['type']} {dataToday['promotion']['description']}"
+                    #curr_message += f"--{dataYesterday['price']} - {dataToday['price']} = {diff} CHEAPER"
+                    if len(item_message) == 0:
+                        item_message.append(curr_message)
+                    if (len(item_message[len(item_message)-1])+len(curr_message)) < 2000:
+                        item_message[len(item_message)-1] += curr_message
+                    else:
+                        item_message.append(curr_message)
                     print(f"{dataToday['name']} is Cheaper {diff}")
                 elif float(dataYesterday['price']) < float(dataToday['price']):
                     diff = float(dataToday['price']) - float(dataYesterday['price'])
-                    message['content'] = f"{message['content']}\n{dataToday['name']} is Expensive {diff}"
+                    curr_message = f"\n[{dataToday['name']}]({dataToday['link']}) is Expensive {diff}"
+                    curr_message += f" {dataToday['promotion']['type']} {dataToday['promotion']['description']}"
+                    #curr_message += f"\n||{dataToday['price']} - {dataYesterday['price']} = {diff} EXPENSIVE||"
+                    if len(item_message) == 0:
+                        item_message.append(curr_message)
+                    if (len(item_message[len(item_message)-1])+len(curr_message)) < 2000:
+                        item_message[len(item_message)-1] += curr_message
+                    else:
+                        item_message.append(curr_message)
                     print(f"{dataToday['name']} is Expensive {diff}")
 
-    sendMessage = requests.post(WEBHOOK_URL, json=message, headers={"Content-Type": "application/json"})
+    for item in item_message:
+        sendMessage = requests.post(WEBHOOK_URL, json={'content': item}, headers={"Content-Type": "application/json"})
+        if not sendMessage.status_code == 204:
+            print(f"ERROR, with status code , the message is not sent with value {message}")
 
+RunNotifier()
