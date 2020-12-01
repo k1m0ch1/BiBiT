@@ -32,7 +32,7 @@ def RunNotifier():
                 if float(dataYesterday['price']) > float(dataToday['price']):
                     diff = float(dataYesterday['price']) - float(dataToday['price'])
                     curr_message = f"\n[{dataToday['name']}]({dataToday['link']}) is Cheaper {diff}"
-                    curr_message += f" {dataToday['promotion']['type']} {dataToday['promotion']['description']}"
+                    curr_message += f" {dataToday['promotion']['type']} {dataToday['promotion']['description']}" if "promotion" in dataToday else ""
                     #curr_message += f"--{dataYesterday['price']} - {dataToday['price']} = {diff} CHEAPER"
                     if len(item_message) == 0:
                         item_message.append(curr_message)
@@ -44,7 +44,7 @@ def RunNotifier():
                 elif float(dataYesterday['price']) < float(dataToday['price']):
                     diff = float(dataToday['price']) - float(dataYesterday['price'])
                     curr_message = f"\n[{dataToday['name']}]({dataToday['link']}) is Expensive {diff}"
-                    curr_message += f" {dataToday['promotion']['type']} {dataToday['promotion']['description']}"
+                    curr_message += f" {dataToday['promotion']['type']} {dataToday['promotion']['description']}" if "promotion" in dataToday else ""
                     #curr_message += f"\n||{dataToday['price']} - {dataYesterday['price']} = {diff} EXPENSIVE||"
                     if len(item_message) == 0:
                         item_message.append(curr_message)
