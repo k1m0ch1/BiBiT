@@ -58,5 +58,3 @@ def RunNotifier():
         sendMessage = requests.post(WEBHOOK_URL, json={'content': item}, headers={"Content-Type": "application/json"})
         if not sendMessage.status_code == 204:
             print(f"ERROR, with status code , the message is not sent with value {message}")
-
-RunNotifier()
