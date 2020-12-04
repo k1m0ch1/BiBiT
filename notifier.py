@@ -81,7 +81,7 @@ def RunNotifier():
     auth.set_access_token(config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_TOKEN_SECRET)
     api = tweepy.API(auth)
 
-    parent = api.update_status(f"Yogya Bot Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
+    parent = api.update_status(f"Yogya Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday, for a full list you can visit the https://www.yogyaonline.co.id/hotdeals.html")
     parent_id = parent.id_str
     logging.info("Parent Message is created")
     index = 1
@@ -92,4 +92,3 @@ def RunNotifier():
         logging.info(f"Sent Message to Thread {parent_id} with pause {randomize} second")
         time.sleep(randomize)
         post = api.update_status(message, parent_id)
-        parent_id = post.id_str
