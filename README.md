@@ -1,7 +1,7 @@
 # BiBiT
 
 <p align='center'>
-    <img src="https://pbs.twimg.com/profile_images/1334873212824375296/fFV1qAdP_400x400.jpg">
+    <img height=250 width=250 src="https://pbs.twimg.com/profile_images/1334873212824375296/fFV1qAdP_400x400.jpg">
 </p>
 
 ## Introduction
