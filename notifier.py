@@ -86,9 +86,10 @@ def RunNotifier():
     logging.info("Parent Message is created")
     index = 1
     for message in twitter_message:
-        randomize = randint(10, 15)
+        randomize = randint(4, 10)
         if index%5 == 0:
-            randomize = 30    
+            randomize = 20    
         logging.info(f"Sent Message to Thread {parent_id} with pause {randomize} second")
         time.sleep(randomize)
         post = api.update_status(message, parent_id)
+        parent_id = post.id_str
