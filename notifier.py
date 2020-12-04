@@ -84,8 +84,11 @@ def RunNotifier():
     parent = api.update_status(f"Yogya Bot Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
     parent_id = parent.id_str
     logging.info("Parent Message is created")
+    index = 1
     for message in twitter_message:
         randomize = randint(10, 15)
+        if index%5 == 0:
+            randomize = 30    
         logging.info(f"Sent Message to Thread {parent_id} with pause {randomize} second")
         time.sleep(randomize)
         post = api.update_status(message, parent_id)
