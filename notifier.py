@@ -22,7 +22,7 @@ def RunNotifier():
 
     def CharacterLimit(platform=str, message=str, data=list) -> list:
         CONFIGURATION = (len(data[len(data)-1])+len(message)) < 2000 if platform == "discord" else \
-            (len(data[len(data)-1])+len(message)) < 200
+            (len(data[len(data)-1])+len(message)) < 280
         if CONFIGURATION:
             data[len(data)-1] += message
         else:
@@ -85,7 +85,8 @@ def RunNotifier():
     parent_id = parent.id_str
     logging.info("Parent Message is created")
     for message in twitter_message:
-        randomize = randint(4, 10)
+        randomize = randint(10, 15)
         logging.info(f"Sent Message to Thread {parent_id} with pause {randomize} second")
         time.sleep(randomize)
-        api.update_status(message, parent_id)
+        post = api.update_status(message, parent_id)
+        parent_id = post.id_str
