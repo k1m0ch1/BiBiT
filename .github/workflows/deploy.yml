@@ -34,7 +34,13 @@ jobs:
             pipenv install --system
             pm2 stop scrapper
             pm2 del scrapper
-            TWITTER_ACCESS_TOKEN=$TWITTER_ACCESS_TOKEN TWITTER_ACCESS_TOKEN_SECRET=$TWITTER_ACCESS_TOKEN_SECRET TWITTER_API_KEY=$TWITTER_API_KEY TWITTER_API_KEY_SECRET=$TWITTER_API_KEY_SECRET DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL pm2 start scrapper.py --interpreter python3 --name "scrapper" --no-autorestart --cron "0 */6 * * *"
-
+            rm .env
+            echo "export TWITTER_ACCESS_TOKEN=$TWITTER_ACCESS_TOKEN" >> .env
+            echo "export TWITTER_ACCESS_TOKEN_SECRET=$TWITTER_ACCESS_TOKEN_SECRET" >> .env
+            echo "export TWITTER_API_KEY=$TWITTER_API_KEY" >> .env
+            echo "export TWITTER_API_KEY_SECRET=$TWITTER_API_KEY_SECRET" >> .env
+            echo "export DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL" >> .env
+            source .env
+            pm2 start scrapper.py --interpreter python3 --name "scrapper" --no-autorestart --cron "0 */6 * * *"
 
 
