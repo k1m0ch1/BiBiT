@@ -12,8 +12,6 @@ from datetime import date, timedelta, datetime
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
 def RunNotifier():
-
-    WEBHOOK_URL = "https://discordapp.com/api/webhooks/781911618702409748/QQ89_tlwWYuT-fUSEkUnPMmJDlH2ohn6rp8bbcIEhL2cHX_8fbLdtE5UGLZ4VbU4fjnR"
     logging.info("Run the Notifier")
 
     DATA_DIR = './data'
@@ -32,14 +30,14 @@ def RunNotifier():
 
     def SendMessage(platform=str, dataToday=dict, dataYesterday=dict) -> str:
         ori_diff = float(dataYesterday['price']) - float(dataToday['price'])
-        diff = ori_diff * -1 if ori_diff < 0 else ori_diff
+        diff = -ori_diff if ori_diff < 0 else ori_diff
         cheap = True if ori_diff > 0 else False
         logging.info(f"{dataToday['name']} is {'Cheaper' if cheap else 'Expensive'} {diff}")
         promotion = f"{dataToday['promotion']['type']} {dataToday['promotion']['description']}" if "promotion" in dataToday else ""
         if platform == "discord":
             return f"\n[{dataToday['name']}]({dataToday['link']}) is {'Cheaper' if cheap else 'Expensive'} {diff} {promotion}"
         return f"{dataToday['name']} is {'Cheaper' if cheap else 'Expensive'} {diff} {promotion}" \
-            f" YESTERDAY({dataYesterday['price']}) - TODAY({dataToday['price']}) = {ori_diff} {'Cheaper' if cheap else 'Expensive'}" \
+            f" YESTERDAY({dataYesterday['price']}) - TODAY({dataToday['price']}) = {diff} {'Cheaper' if cheap else 'Expensive'}" \
             f" {dataToday['link']}"
 
 
@@ -73,7 +71,7 @@ def RunNotifier():
                 twitter_message = CharacterLimit("twitter", curr_message['twitter'], twitter_message)
 
     for message in discord_message:
-        sendMessage = requests.post(WEBHOOK_URL, json={'content': message}, headers={"Content-Type": "application/json"})
+        sendMessage = requests.post(config.DISCORD_WEBHOOK_URL, json={'content': message}, headers={"Content-Type": "application/json"})
         if not sendMessage.status_code == 204:
             logging.error(f"ERROR, with status code , the message is not sent with value {message}")
     

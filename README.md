@@ -15,3 +15,16 @@ The bot is simply scrap from the page `https://www.yogyaonline.co.id/hotdeals.ht
 ## The Difference between online and offline store
 
 so far I just fo to the 1 store offline, the online and offline have a different from 1000 - 15000
+
+## List to do
+
+1. prevent the twitter from mark the post as spam
+2. made a summary of product list with image and text
+2.1 every image held up to 15 item
+2.2 using PIL
+3. Command
+3.1 cheapest item today (with comparison)
+3.2 expensive item today (with comparison)
+4. SEMBAKO
+4.1 List the SEMBAKO ITEM
+4.2 analytic the SEMBAKO ITEM in yogya

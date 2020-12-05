@@ -1,0 +1,40 @@
+[
+    {
+        "datetime": datetime,
+        "expensive": {[
+            {
+                "name": "asd",
+                "id": "asd",
+                "price": {
+                    "today": 123,
+                    "yesterday":123
+                }
+            }
+        ]},
+        "cheap":{[
+            {
+                "name": "asd",
+                "id": "asd",
+                "price": {
+                    "today": 123,
+                    "yesterday":123
+                }
+            }
+        ]}
+        "summary":{
+            "expensive":{
+                "count": 0,
+                "max": 0,
+                "min": 0,
+                "average": 0,
+            },
+            "cheap":{
+                "count": 0,
+                "max": 0,
+                "min": 0,
+                "average": 0,
+            },
+            "total_data": 0
+        } 
+   }
+]
