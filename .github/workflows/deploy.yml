@@ -25,10 +25,9 @@ jobs:
           TWITTER_API_KEY_SECRET: ${{ secrets.TWITTER_API_KEY_SECRET }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         with:
-          host: 'root@${{ secrets.REMOTE_HOST }}'
+          hosts: 'root@${{ secrets.REMOTE_HOST }}'
           privateKey: ${{ secrets.SSH_PRIVATE_KEY }}
           debug: true
-          connect_timeout: 20s
           command: |
             cd ~/BiBiT
             git pull origin master
