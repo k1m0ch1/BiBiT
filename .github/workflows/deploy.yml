@@ -41,7 +41,7 @@ jobs:
             echo "export TWITTER_API_KEY=$TWITTER_API_KEY" >> .env
             echo "export TWITTER_API_KEY_SECRET=$TWITTER_API_SECRET_KEY" >> .env
             echo "export DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL" >> .env
-            source .env
+            source ~/.bashrc
             pm2 start scrapper.py --interpreter python3 --name "scrapper" --no-autorestart --cron "0 */6 * * *"
 
 
