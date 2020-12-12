@@ -37,6 +37,8 @@ def jobScrapper():
     file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
     file_object.write(json.dumps(cData))
 
+    logging.info(f"== scrapping success, saved to {DATA_DIR}/{TODAY_STRING}.json")
+
 
 if __name__ == "__main__":
     logging.info("=== si BiBiT job")

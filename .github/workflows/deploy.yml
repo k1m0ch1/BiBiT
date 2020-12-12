@@ -42,6 +42,6 @@ jobs:
             echo "export TWITTER_API_SECRET_KEY=$TWITTER_API_SECRET_KEY" >> .env
             echo "export DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL" >> .env
             source ~/.bashrc
-            pm2 start main.py --interpreter python3 --name "BiBiT" --ignore-watch
+            pm2 start main.py --interpreter python3 --name "BiBiT" --ignore-watch ./data
 
 
