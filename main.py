@@ -2,6 +2,8 @@ import schedule
 import time
 import logging
 import config
+import json
+import os
 
 from scrapper import hotDealsPage
 from notifier import runNotifier
