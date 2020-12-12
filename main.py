@@ -44,7 +44,7 @@ if __name__ == "__main__":
     
     for SCRAPPING_TIME in config.SCRAPPING_TIME:
         logging.info(f"=== scrapper worker at {SCRAPPING_TIME} is queued")
-        schedule.every().day.at(PRIME_TIME).do(jobScrapper)
+        schedule.every().day.at(SCRAPPING_TIME).do(jobScrapper)
 
     while True:
         schedule.run_pending()
