@@ -4,7 +4,6 @@ import json
 import os
 import sys
 import logging
-from datetime import date
 from bs4 import BeautifulSoup
 from config import DATA_DIR
 

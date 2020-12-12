@@ -7,7 +7,7 @@ import config
 import time
 import tweepy
 from random import randint
-from datetime import date, timedelta, datetime
+from datetime import datetime
 from config import DATA_DIR, TODAY_STRING, YESTERDAY_STRING
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
