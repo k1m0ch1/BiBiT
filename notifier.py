@@ -11,8 +11,8 @@ from datetime import date, timedelta, datetime
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
-def RunNotifier():
-    logging.info("Run the Notifier")
+def runNotifier():
+    logging.info("run the Notifier")
 
     DATA_DIR = './data'
     TODAY_STRING = date.today().strftime("%Y-%m-%d")
