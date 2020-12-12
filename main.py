@@ -5,6 +5,7 @@ import config
 
 from scrapper import hotDealsPage
 from notifier import runNotifier
+from config import DATA_DIR, TODAY_STRING, YESTERDAY_STRING
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 

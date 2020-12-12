@@ -33,8 +33,8 @@ jobs:
             git reset --hard
             git pull origin master
             pipenv install --system
-            pm2 stop scrapper
-            pm2 del scrapper
+            pm2 stop BiBiT
+            pm2 del BiBiT
             rm .env
             echo "export TWITTER_ACCESS_TOKEN=$TWITTER_ACCESS_TOKEN" >> .env
             echo "export TWITTER_ACCESS_TOKEN_SECRET=$TWITTER_ACCESS_TOKEN_SECRET" >> .env

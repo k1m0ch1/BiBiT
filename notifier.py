@@ -8,15 +8,12 @@ import time
 import tweepy
 from random import randint
 from datetime import date, timedelta, datetime
+from config import DATA_DIR, TODAY_STRING, YESTERDAY_STRING
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
 def runNotifier():
     logging.info("run the Notifier")
-
-    DATA_DIR = './data'
-    TODAY_STRING = date.today().strftime("%Y-%m-%d")
-    YESTERDAY_STRING = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
 
     def CharacterLimit(platform=str, message=str, data=list) -> list:
         CONFIGURATION = (len(data[len(data)-1])+len(message)) < 2000 if platform == "discord" else \

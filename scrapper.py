@@ -6,9 +6,8 @@ import sys
 import logging
 from datetime import date
 from bs4 import BeautifulSoup
+from config import DATA_DIR
 
-DATA_DIR = './data'
-TODAY_STRING = date.today().strftime("%Y-%m-%d")
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
 def hotDealsPage(page=1, limit=80):
