@@ -1,6 +1,6 @@
 import ast
 
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 from os import environ
 
 _ = environ.get

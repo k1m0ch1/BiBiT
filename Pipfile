@@ -10,6 +10,7 @@ requests = "*"
 beautifulsoup4 = "*"
 tweepy = "*"
 schedule = "*"
+flake8 = "*"
 
 [requires]
 python_version = "3.8"
