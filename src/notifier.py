@@ -29,12 +29,13 @@ def runNotifier():
         ori_diff = float(dataYesterday['price']) - float(dataToday['price'])
         diff = -ori_diff if ori_diff < 0 else ori_diff
         cheap = True if ori_diff > 0 else False
-        logging.info(f"{dataToday['name']} is {'Cheaper' if cheap else 'Expensive'} {diff}")
+        cheap_text = 'Cheaper 🤑' if cheap else 'Expensive 🙄'
+        logging.info(f"{dataToday['name']} is {cheap_text} {diff}")
         promotion = f"{dataToday['promotion']['type']} {dataToday['promotion']['description']}" if "promotion" in dataToday else ""
         if platform == "discord":
-            return f"\n🛒 [{dataToday['name']}]({dataToday['link']}) is {'Cheaper' if cheap else 'Expensive'} {diff} {promotion}"
-        return f"🛒{dataToday['name']} is {'Cheaper' if cheap else 'Expensive'} {diff} {promotion}" \
-            f"   🧮YESTERDAY({dataYesterday['price']}) - TODAY({dataToday['price']}) = {diff} {'Cheaper' if cheap else 'Expensive'}" \
+            return f"\n🛒 [{dataToday['name']}]({dataToday['link']}) is {cheap_text} {diff} {promotion}"
+        return f"🛒{dataToday['name']} is {cheap_text} {diff} {promotion}" \
+            f"   🧮YESTERDAY({dataYesterday['price']}) - TODAY({dataToday['price']}) = {diff} {cheap_text}" \
             f" {dataToday['link']}"
 
 
@@ -67,26 +68,28 @@ def runNotifier():
                 discord_message = CharacterLimit("discord", curr_message['discord'], discord_message)
                 twitter_message = CharacterLimit("twitter", curr_message['twitter'], twitter_message)
 
-    logging.info("== sent to discord")
-    for message in discord_message:
-        sendMessage = requests.post(config.DISCORD_WEBHOOK_URL, json={'content': message}, headers={"Content-Type": "application/json"})
-        if not sendMessage.status_code == 204:
-            logging.error(f"ERROR, with status code , the message is not sent with value {message}")
+    if config.DISCORD_NOTIFICATION:
+        logging.info("== sent to discord")
+        for message in discord_message:
+            sendMessage = requests.post(config.DISCORD_WEBHOOK_URL, json={'content': message}, headers={"Content-Type": "application/json"})
+            if not sendMessage.status_code == 204:
+                logging.error(f"ERROR, with status code , the message is not sent with value {message}")
     
-    logging.info("== sent to twitter")
-    auth = tweepy.OAuthHandler(config.TWITTER_API_KEY, config.TWITTER_API_SECRET_KEY)
-    auth.set_access_token(config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_TOKEN_SECRET)
-    api = tweepy.API(auth)
-    
-    parent = api.update_status(f"Yogya Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday, for a full list you can visit the https://www.yogyaonline.co.id/hotdeals.html")
-    parent_id = parent.id_str
-    logging.info("Parent Message is created")
-    index = 1
-    for message in twitter_message:
-        randomize = randint(4, 10)
-        if index%5 == 0:
-            randomize = 20    
-        logging.info(f"Sent Message to Thread {parent_id} with pause {randomize} second")
-        time.sleep(randomize)
-        post = api.update_status(message, parent_id)
-        parent_id = post.id_str
+    if config.TWITTER_NOTIFICATION:
+        logging.info("== sent to twitter")
+        auth = tweepy.OAuthHandler(config.TWITTER_API_KEY, config.TWITTER_API_SECRET_KEY)
+        auth.set_access_token(config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_TOKEN_SECRET)
+        api = tweepy.API(auth)
+        
+        parent = api.update_status(f"Yogya Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday, for a full list you can visit the https://www.yogyaonline.co.id/hotdeals.html")
+        parent_id = parent.id_str
+        logging.info("Parent Message is created")
+        index = 1
+        for message in twitter_message:
+            randomize = randint(4, 10)
+            if index%5 == 0:
+                randomize = 20    
+            logging.info(f"Sent Message to Thread {parent_id} with pause {randomize} second")
+            time.sleep(randomize)
+            post = api.update_status(message, parent_id)
+            parent_id = post.id_str
