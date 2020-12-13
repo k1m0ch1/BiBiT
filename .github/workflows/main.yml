@@ -65,7 +65,11 @@ jobs:
         command: |
           cd ~/BiBiT
           git reset --hard
-          git pull origin master
+          git fetch --all
+          git fetch --tags
+          latestTag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          git checkout $latestTag
+          fit pull origin $latestTag
           pipenv install --system
           pm2 stop BiBiT
           pm2 del BiBiT
