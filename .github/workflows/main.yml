@@ -1,4 +1,4 @@
-name: BiBiT Unit Testing
+name: BiBiT Github Action
 
 on: [push]
 

@@ -32,10 +32,11 @@ def runNotifier():
         cheap_text = 'Cheaper 🤑' if cheap else 'Expensive 🙄'
         logging.info(f"{dataToday['name']} is {cheap_text} {diff}")
         promotion = f"{dataToday['promotion']['type']} {dataToday['promotion']['description']}" if "promotion" in dataToday else ""
+        promotion = promotion.replace("\n", "")
         if platform == "discord":
             return f"\n🛒 [{dataToday['name']}]({dataToday['link']}) is {cheap_text} {diff} {promotion}"
         return f"🛒{dataToday['name']} is {cheap_text} {diff} {promotion}" \
-            f"   🧮YESTERDAY({dataYesterday['price']}) - TODAY({dataToday['price']}) = {diff} {cheap_text}" \
+            f"\n\n🧮 my calculation is YESTERDAY({dataYesterday['price']}) - TODAY({dataToday['price']}) = {diff} {cheap_text}" \
             f" {dataToday['link']}"
 
 
@@ -74,6 +75,8 @@ def runNotifier():
             sendMessage = requests.post(config.DISCORD_WEBHOOK_URL, json={'content': message}, headers={"Content-Type": "application/json"})
             if not sendMessage.status_code == 204:
                 logging.error(f"ERROR, with status code , the message is not sent with value {message}")
+    else:
+        logging.info("== sent discord is disabled")
     
     if config.TWITTER_NOTIFICATION:
         logging.info("== sent to twitter")
@@ -93,3 +96,5 @@ def runNotifier():
             time.sleep(randomize)
             post = api.update_status(message, parent_id)
             parent_id = post.id_str
+    else:
+        logging.info("== sent twitter is disabled")
