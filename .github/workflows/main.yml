@@ -74,13 +74,13 @@ jobs:
           pm2 stop BiBiT
           pm2 del BiBiT
           rm .env
-          echo "export TWITTER_NOTIFICATION=$TWITTER_NOTIFICATION" >> .env
-          echo "export TWITTER_ACCESS_TOKEN=$TWITTER_ACCESS_TOKEN" >> .env
-          echo "export TWITTER_ACCESS_TOKEN_SECRET=$TWITTER_ACCESS_TOKEN_SECRET" >> .env
-          echo "export TWITTER_API_KEY=$TWITTER_API_KEY" >> .env
-          echo "export TWITTER_API_SECRET_KEY=$TWITTER_API_SECRET_KEY" >> .env
-          echo "export DISCORD_NOTIFICATION=$DISCORD_NOTIFICATION" >> .env
-          echo "export DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL" >> .env
+          echo "export TWITTER_NOTIFICATION=${{ env.TWITTER_NOTIFICATION }}" >> .env
+          echo "export TWITTER_ACCESS_TOKEN=${{ env.TWITTER_ACCESS_TOKEN }}" >> .env
+          echo "export TWITTER_ACCESS_TOKEN_SECRET=${{ env.TWITTER_ACCESS_TOKEN_SECRET }}" >> .env
+          echo "export TWITTER_API_KEY=${{ env.TWITTER_API_KEY }}" >> .env
+          echo "export TWITTER_API_SECRET_KEY=${{ env.TWITTER_API_SECRET_KEY }}" >> .env
+          echo "export DISCORD_NOTIFICATION=${{ env.DISCORD_NOTIFICATION }}" >> .env
+          echo "export DISCORD_WEBHOOK_URL=${{ env.DISCORD_WEBHOOK_URL }}" >> .env
           echo "export DATA_DIR=$(pwd)/data" >> .env
           python3 -m src.test.envTest
           rm run.sh
