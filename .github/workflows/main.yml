@@ -82,5 +82,12 @@ jobs:
           echo "export DISCORD_NOTIFICATION=$DISCORD_NOTIFICATION" >> .env
           echo "export DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL" >> .env
           echo "export DATA_DIR=$(pwd)/data" >> .env
-          source ~/.bashrc
-          pm2 start src/main.py --interpreter python3 --name "BiBiT" --ignore-watch ./data
+          python3 -m src.test.envTest
+          rm run.sh
+          touch run.sh
+          echo "#!/bin/bash" >> run.sh
+          echo "source ~/.bashrc" >> run.sh
+          echo "pm2 start src/main.py --interpreter python3 --name BiBiT --ignore-watch ./data" >> run.sh
+          chmod +x run.sh
+          bash run.sh
+          
