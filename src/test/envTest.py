@@ -13,6 +13,9 @@ class TestEnvironmentVariable(unittest.TestCase):
         if config.DISCORD_NOTIFICATION:
             print(f"discord notification is enabled")
             assert len(config.DISCORD_WEBHOOK_URL) > 0, "env DISCORD_WEBHOOK_URL is empty"
+        
+        if not config.TWITTER_NOTIFICATION and not config.TWITTER_NOTIFICATION:
+            print(f"discord and twitter notification is disabled")
 
 if __name__ == '__main__':
     unittest.main()
