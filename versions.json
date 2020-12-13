@@ -1,0 +1,5 @@
+[
+    "1.0.0-beta":[
+        "first release of the BiBit the main feature with this tools is a bot that will scrap yogyaonline.co.id/hotdeals.html and then store the data as json and then if have a change with yesterday comparison will notify to discord or twitter"
+    ]
+]

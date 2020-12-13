@@ -3,4 +3,3 @@ data/*
 .env
 __pycache__
 analytics.json
-*.json
