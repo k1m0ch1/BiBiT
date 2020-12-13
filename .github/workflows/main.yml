@@ -48,7 +48,7 @@ jobs:
         source ~/.bashrc
         python -m src.test.envTest
     - name: ssh deploy
-      if: startsWith( github.ref, 'refs/tags/releases/')
+      if: startsWith( github.ref, 'refs/tags/')
       uses: JimCronqvist/action-ssh@master
       env:
         TWITTER_NOTIFICATION: ${{ secrets.TWITTER_NOTIFICATION }}
