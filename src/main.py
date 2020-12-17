@@ -42,15 +42,15 @@ def jobScrapper():
 
     logging.info("=== start scrapping indomaret")    
     cData = {
-    'data': promosiMingguIni(),
-    'date': TODAY_STRING
-}
+        'data': promosiMingguIni(),
+        'date': TODAY_STRING
+    }
 
-if not os.path.isdir(f"{DATA_DIR}/indomaret"):
-    os.mkdir(f"{DATA_DIR}/indomaret")
+    if not os.path.isdir(f"{DATA_DIR}/indomaret"):
+        os.mkdir(f"{DATA_DIR}/indomaret")
 
-file_object = open(f'{DATA_DIR}/indomaret/{TODAY_STRING}.json', 'w+')
-file_object.write(json.dumps(cData))
+    file_object = open(f'{DATA_DIR}/indomaret/{TODAY_STRING}.json', 'w+')
+    file_object.write(json.dumps(cData))
 
     logging.info(f"== scrapping success, saved to {DATA_DIR}/{TODAY_STRING}.json")
 
