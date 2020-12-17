@@ -7,6 +7,7 @@ import os
 
 from scrapper import hotDealsPage
 from notifier import runNotifier
+from indomaret import 
 from config import DATA_DIR, TODAY_STRING, YESTERDAY_STRING
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
@@ -15,7 +16,7 @@ def jobScrapper():
     logging.info("=== worker is running")
     prevData = {}
 
-    logging.info("=== start scrapping")
+    logging.info("=== start scrapping yogya")
     currData = hotDealsPage()
     compiledData = []
     index = 2
@@ -36,6 +37,20 @@ def jobScrapper():
 
     file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
     file_object.write(json.dumps(cData))
+
+    logging.info(f"== scrapping success, saved to {DATA_DIR}/{TODAY_STRING}.json")
+
+    logging.info("=== start scrapping indomaret")    
+    cData = {
+    'data': promosiMingguIni(),
+    'date': TODAY_STRING
+}
+
+if not os.path.isdir(f"{DATA_DIR}/indomaret"):
+    os.mkdir(f"{DATA_DIR}/indomaret")
+
+file_object = open(f'{DATA_DIR}/indomaret/{TODAY_STRING}.json', 'w+')
+file_object.write(json.dumps(cData))
 
     logging.info(f"== scrapping success, saved to {DATA_DIR}/{TODAY_STRING}.json")
 
