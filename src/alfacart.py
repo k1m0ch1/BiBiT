@@ -90,6 +90,7 @@ def promotion():
     file_object.write(json.dumps(cData))
 
     print(f"Total data gathered {len(compiledData['data'])}")
+    return compiledData['data']
 
 
 def catalog():
