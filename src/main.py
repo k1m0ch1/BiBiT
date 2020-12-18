@@ -8,6 +8,7 @@ import os
 from scrapper import hotDealsPage
 from notifier import runNotifier
 from indomaret import promosiMingguIni
+from alfacart import promotion
 from config import DATA_DIR, TODAY_STRING, YESTERDAY_STRING
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
@@ -52,7 +53,21 @@ def jobScrapper():
     file_object = open(f'{DATA_DIR}/indomaret/{TODAY_STRING}.json', 'w+')
     file_object.write(json.dumps(cData))
 
-    logging.info(f"== scrapping success, saved to {DATA_DIR}/{TODAY_STRING}.json")
+    logging.info(f"== scrapping indomaret success, saved to {DATA_DIR}/indomaret/{TODAY_STRING}.json")
+
+    logging.info("=== start scrapping alfacart")    
+    cData = {
+        'data': promotion(),
+        'date': TODAY_STRING
+    }
+
+    if not os.path.isdir(f"{DATA_DIR}/alfacart"):
+        os.mkdir(f"{DATA_DIR}/alfacart")
+
+    file_object = open(f'{DATA_DIR}/alfacart/{TODAY_STRING}.json', 'w+')
+    file_object.write(json.dumps(cData))
+
+    logging.info(f"== scrapping alfacart success, saved to {DATA_DIR}/alfacart/{TODAY_STRING}.json")
 
 
 if __name__ == "__main__":
