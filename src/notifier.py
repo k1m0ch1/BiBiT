@@ -7,12 +7,15 @@ import config
 import time
 import tweepy
 from random import randint
-from datetime import datetime
-from config import DATA_DIR, TODAY_STRING, YESTERDAY_STRING
+from datetime import datetime, timedelta, date
+from config import DATA_DIR
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
+
 def runNotifier():
+    TODAY_STRING = date.today().strftime("%Y-%m-%d")
+    YESTERDAY_STRING = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
     logging.info("== run the Notifier")
 
     def CharacterLimit(platform=str, message=str, data=list) -> list:

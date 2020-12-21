@@ -1,13 +1,9 @@
 import requests
-import re
-import json
-import os
-import sys
 import logging
 from bs4 import BeautifulSoup
-from config import DATA_DIR, TODAY_STRING, YESTERDAY_STRING
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
+
 
 def promosiMingguIni():
 
@@ -16,7 +12,7 @@ def promosiMingguIni():
 
     def cleanUpCurrency(price: str) -> int:
         return int(price.replace("Rp", "").replace(".",""))
-    
+
     def findPromosiLink():
         TARGET_URL = "https://www.klikindomaret.com"
         indexPage = requests.get(TARGET_URL)
@@ -32,7 +28,7 @@ def promosiMingguIni():
                 return getLink.find('a').get('href')
 
     promosiLink = findPromosiLink()
-    
+
     # need to validate if the link is valid
 
     getPage = requests.get(f"{promosiLink}")
@@ -41,14 +37,13 @@ def promosiMingguIni():
 
     getPageList = parser.find("select", {"class": "form-control pagelist"})
     maxPage = len(getPageList.find_all('option'))
-    pageHref = getPageList.get("data-href")
 
     products = []
-    for page in range(0,maxPage):
+    for page in range(0, maxPage):
         logging.info(f"{promosiLink}{pageParam}&page={page+1}")
         promotionPage = requests.get(f"{promosiLink}{pageParam}&page={page+1}")
         parser = BeautifulSoup(promotionPage.text, 'html.parser')
-    
+
         getItem = parser.find_all("div", {"class": "box-item clearfix"})
         for index, item in enumerate(getItem[0].find_all("div", {"class": "item"})):
             link = f"{TARGET_URL}{item.find('a').get('href')}"
@@ -66,7 +61,7 @@ def promosiMingguIni():
                 'id': productID,
                 'price': cleanUpCurrency(productPrice),
                 'link': link,
-                "promotion":{
+                "promotion": {
                     "type": productPromotion,
                     "original_price": productOldPrice
                 }

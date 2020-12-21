@@ -17,9 +17,6 @@ PRIME_TIME=_("PRIME_TIME", ["01:00", "09:00", "13:00", "19:00"])
 SCRAPPING_TIME=_("SCRAPPING_TIME", ["00:45", "07:00", "08:45", "12:45", "18:45", "21:00"])
 DATA_DIR=_("DATA_DIR", "./data")
 
-TODAY_STRING = date.today().strftime("%Y-%m-%d")
-YESTERDAY_STRING = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-
 DISCORD_NOTIFICATION=True if DISCORD_NOTIFICATION=="True" or DISCORD_NOTIFICATION=="true" else DISCORD_NOTIFICATION
 TWITTER_NOTIFICATION=True if TWITTER_NOTIFICATION=="True" or TWITTER_NOTIFICATION=="true" else TWITTER_NOTIFICATION
 PRIME_TIME = ast.literal_eval(PRIME_TIME) if type(PRIME_TIME) == str else PRIME_TIME

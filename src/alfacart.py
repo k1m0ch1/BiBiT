@@ -1,15 +1,14 @@
 import requests
 import json
 import os
-import sys
 import logging
-import urllib3
 
-from bs4 import BeautifulSoup
+from datetime import date, timedelta
 from math import ceil
-from config import DATA_DIR, TODAY_STRING, YESTERDAY_STRING
+from config import DATA_DIR
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
+
 
 def promotion():
     TARGET_URL = "https://mapigo.alfacart.com/v5/promotion"
@@ -23,14 +22,14 @@ def promotion():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
     }
     BODY = {
-        "qtext":"beli-banyak-lebih-murah",
-        "filter":[],
+        "qtext": "beli-banyak-lebih-murah",
+        "filter": [],
         "page": 1,
         "fetch_promotion": True,
         "sort":
         {
-            "label":"position",
-            "direction":"asc"
+            "label": "position",
+            "direction": "asc"
         },
         "rows": 999999
     }
@@ -78,22 +77,12 @@ def promotion():
                 else:
                     continue
 
-    cData = {
-        'data': compiledData['data'],
-        'date': TODAY_STRING
-    }
-
-    if not os.path.isdir(f"{DATA_DIR}/alfacart"):
-        os.mkdir(f"{DATA_DIR}/alfacart")
-
-    file_object = open(f'{DATA_DIR}/alfacart/{TODAY_STRING}.json', 'w+')
-    file_object.write(json.dumps(cData))
-
-    print(f"Total data gathered {len(compiledData['data'])}")
     return compiledData['data']
 
 
 def catalog():
+    TODAY_STRING = date.today().strftime("%Y-%m-%d")
+    YESTERDAY_STRING = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
     TARGET_URL = "https://mapigo.alfacart.com/v5/list/catalog"
     HEADERS = {
         "Accept": "application/json, text/plain, */*",
@@ -180,7 +169,7 @@ def catalog():
                     else:
                         logging.info(f"{itemData['id']} already exist {compiledData['listIds']}")
                         continue
-                    
+
 
     cData = {
         'data': compiledData['data'],
