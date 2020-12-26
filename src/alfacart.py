@@ -180,18 +180,7 @@ def catalog():
                         continue
                         
                     
-    cData = {
-        'data': compiledData['data'],
-        'date': TODAY_STRING
-    }
-
-    if not os.path.isdir(f"{DATA_DIR}/alfacart"):
-        os.mkdir(f"{DATA_DIR}/alfacart")
-
-    file_object = open(f'{DATA_DIR}/alfacart/{TODAY_STRING}-catalog.json', 'w+')
-    file_object.write(json.dumps(cData))
-
-    print(f"Total data gathered {len(compiledData['data'])}")
+    return compiledData['data']
 
 '''
 {

@@ -9,3 +9,6 @@ def randomWait(min, max):
     wait = choice([i for i in range(min, max)])
     logging.info(f"Wait for {wait} seconds")
     time.sleep(wait)
+
+def cleanUpCurrency(price: str) -> int:
+    return int(price.replace("Rp", "").replace(".",""))
