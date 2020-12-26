@@ -2,13 +2,21 @@ import requests
 import json
 import os
 import logging
+import sys
 
 from datetime import date, timedelta
 from math import ceil
 from config import DATA_DIR
+from util import randomWait
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
+def retry(reqa):
+    logging.error("Weird Errror, here is the error")
+    print(reqa.status_code)
+    print(reqa.text)
+    logging.info("I'll retry and lets relax")
+    randomWait(60, 90)
 
 def promotion():
     TARGET_URL = "https://mapigo.alfacart.com/v5/promotion"
@@ -84,6 +92,7 @@ def catalog():
     TODAY_STRING = date.today().strftime("%Y-%m-%d")
     YESTERDAY_STRING = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
     TARGET_URL = "https://mapigo.alfacart.com/v5/list/catalog"
+    CATALOG_URL = "https://mapigo.alfacart.com/v5/home/categories"
     HEADERS = {
         "Accept": "application/json, text/plain, */*",
         "application": "web",
@@ -104,22 +113,6 @@ def catalog():
         },
         "rows": 200
     }
-    CATEGORY_ID = [
-        723,
-        2277,
-        # 2276,
-        # 918,
-        # 788,
-        # 2045,
-        # 789,
-        # 793,
-        # 794,
-        # 807,
-        # 928,
-        # 814,
-        # 815,
-        # 864
-    ]
 
     requests.packages.urllib3.disable_warnings()
     requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
@@ -131,16 +124,23 @@ def catalog():
 
     compiledData = {
         "data": [],
-        "listIds": []
+        "listIds": [],
+        "categories_id": []
     }
 
-    for ID in CATEGORY_ID:
-        logging.info(ID)
-        BODY['category_id'] = ID
+    resp_category = requests.get(CATALOG_URL, headers=HEADERS, verify=False)
+    categories = resp_category.json()['categories']
+    compiledData['categories_id'] += categories
+
+    for categories in compiledData['categories_id']:
+        logging.info(categories['id'])
+        BODY['category_id'] = categories['id']
+        randomWait(5, 10)
         req = requests.post(TARGET_URL, json=BODY, headers=HEADERS, verify=False)
         data_raw = req.json()
-        data = req.json()["result"]["result_products"]
-        result_count = req.json()["result"]["result_count"]
+        result = req.json()["result"]
+        data = result["result_products"]
+        result_count = result["result_count"]
         logging.info(f'{result_count} and actual {len(data)}')
         if len(compiledData) == 0:
             compiledData['data'] += data
@@ -155,22 +155,31 @@ def catalog():
                     continue
 
         if result_count > len(data):
-            logging.info(f'Get All Data')
             max_page = ceil(result_count/200)
+            logging.info(f'Get {result_count} in total from {max_page} page') 
             for page in range(1, max_page):
                 BODY['page'] = page+1
-                logging.info(f'Page {page+1}')
-                reqa = requests.post(TARGET_URL, json=BODY, headers=HEADERS, verify=False)
-                data = req.json()["result"]["result_products"]
-                for itemData in data:
-                    if itemData["id"] not in compiledData['listIds']:
-                        compiledData['data'].append(itemData)
-                        compiledData['listIds'].append(itemData["id"])
+                logging.info(BODY)
+                while True:
+                    # if BODY['page'] % 3 == 0:
+                    #     randomWait()
+                    reqa = requests.post(TARGET_URL, json=BODY, headers=HEADERS, verify=False)
+                    if reqa.status_code == 200:
+                        if "result" in reqa.json():
+                            data = reqa.json()["result"]["result_products"]
+                            for itemData in data:
+                                if itemData["id"] not in compiledData['listIds']:
+                                    compiledData['data'].append(itemData)
+                                    compiledData['listIds'].append(itemData["id"])
+                            break
+                        else:
+                            retry(reqa)
+                            continue
                     else:
-                        logging.info(f"{itemData['id']} already exist {compiledData['listIds']}")
+                        retry(reqa)
                         continue
-
-
+                        
+                    
     cData = {
         'data': compiledData['data'],
         'date': TODAY_STRING
