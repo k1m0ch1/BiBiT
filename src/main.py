@@ -92,15 +92,15 @@ def jobScrapper(target: str = 'all', itemsType: str = 'all'):
 if __name__ == "__main__":
     REQUIREMENT_DIR = [
         f"{DATA_DIR}",
-        f"{PARENT_DIR}/alfacart",
-        f"{PARENT_DIR}/alfacart/catalog",
-        f"{PARENT_DIR}/alfacart/promo",
-        f"{PARENT_DIR}/klikindomaret"
-        f"{PARENT_DIR}/klikindomaret/promo"
-        f"{PARENT_DIR}/klikindomaret/catalog"
-        f"{PARENT_DIR}/yogyaonline"
-        f"{PARENT_DIR}/yogyaonline/promo"
-        f"{PARENT_DIR}/yogyaonline/catalog"
+        f"{DATA_DIR}/alfacart",
+        f"{DATA_DIR}/alfacart/catalog",
+        f"{DATA_DIR}/alfacart/promo",
+        f"{DATA_DIR}/klikindomaret"
+        f"{DATA_DIR}/klikindomaret/promo"
+        f"{DATA_DIR}/klikindomaret/catalog"
+        f"{DATA_DIR}/yogyaonline"
+        f"{DATA_DIR}/yogyaonline/promo"
+        f"{DATA_DIR}/yogyaonline/catalog"
     ]
 
     for dirr in REQUIREMENT_DIR:
