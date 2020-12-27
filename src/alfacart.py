@@ -145,7 +145,7 @@ def catalog():
     categories = resp_category.json()['categories']
     compiledData['categories_id'] += categories
 
-    for categories in compiledData['categories_id'][0:2]:
+    for categories in compiledData['categories_id']:
         logging.info(categories['id'])
         BODY['category_id'] = categories['id']
         randomWait(60, 90)
