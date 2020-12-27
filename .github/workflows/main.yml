@@ -76,10 +76,19 @@ jobs:
           rm run.sh
           touch run.sh
           echo "#!/bin/bash" >> run.sh
-          echo "pm2 stop BiBiT" >> run.sh
-          echo "pm2 del BiBiT" >> run.sh
+          echo "pm2 stop BiBiT.alfacart.scrapper" >> run.sh
+          echo "pm2 stop BiBiT.yogyaonline.scrapper" >> run.sh
+          echo "pm2 stop BiBiT.klikindomaret.scrapper" >> run.sh
+          echo "pm2 stop BiBiT.notifier" >> run.sh
+          echo "pm2 del BiBiT.alfacart.scrapper" >> run.sh
+          echo "pm2 del BiBiT.yogyaonline.scrapper" >> run.sh
+          echo "pm2 del BiBiT.klikindomaret.scrapper" >> run.sh
+          echo "pm2 del BiBiT.notifier" >> run.sh
           echo "source ~/.bashrc" >> run.sh
-          echo "pm2 start src/main.py --interpreter python3 --name BiBiT --ignore-watch ./data" >> run.sh
+          echo "pm2 start src/main.py --interpreter python3 --name BiBiT.alfacart.scrapper --ignore-watch ./data -- scrap --target alfacart" >> run.sh
+          echo "pm2 start src/main.py --interpreter python3 --name BiBiT.yogyaonline.scrapper --ignore-watch ./data -- scrap --target yogyaonline" >> run.sh
+          echo "pm2 start src/main.py --interpreter python3 --name BiBiT.klikindomaret.scrapper --ignore-watch ./data -- scrap --target klikindomaret" >> run.sh
+          echo "pm2 start src/main.py --interpreter python3 --name BiBiT.notifier --ignore-watch ./data -- notif" >> run.sh
           chmod +x run.sh
           bash run.sh
           
