@@ -95,11 +95,11 @@ if __name__ == "__main__":
         f"{DATA_DIR}/alfacart",
         f"{DATA_DIR}/alfacart/catalog",
         f"{DATA_DIR}/alfacart/promo",
-        f"{DATA_DIR}/klikindomaret"
-        f"{DATA_DIR}/klikindomaret/promo"
-        f"{DATA_DIR}/klikindomaret/catalog"
-        f"{DATA_DIR}/yogyaonline"
-        f"{DATA_DIR}/yogyaonline/promo"
+        f"{DATA_DIR}/klikindomaret",
+        f"{DATA_DIR}/klikindomaret/promo",
+        f"{DATA_DIR}/klikindomaret/catalog",
+        f"{DATA_DIR}/yogyaonline",
+        f"{DATA_DIR}/yogyaonline/promo",
         f"{DATA_DIR}/yogyaonline/catalog"
     ]
 
