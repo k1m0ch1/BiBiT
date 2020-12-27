@@ -13,6 +13,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:
 def scrap(URL, index):
     TARGET_URL = f"{URL}?p={index}&product_list_limit=80"
     dataProduct = []
+    list_ids = []
     # logging.info(f"Run the Scrapper {URL} page {index}")
     req = requests.get(TARGET_URL)
 
@@ -55,9 +56,15 @@ def scrap(URL, index):
                 found = found.replace(";", "")
     
     data_raw = json.loads(found)
-    for grouped_item in data_raw:
+    for index, grouped_item in enumerate(data_raw):
         dataEcommerce = grouped_item['ecommerce']
-        dataProduct += dataEcommerce['impressions']
+        for item in dataEcommerce['impressions']:
+            if item['id'] not in list_ids:
+                dataProduct.append(item)
+                list_ids.append(item['id'])
+            else:
+                logging.info(f"{item['name']} already exist")
+                productLink.pop(index)
 
     for key, value in enumerate(productLink):
         dataProduct[key]['link'] = value
@@ -100,6 +107,7 @@ def getCategories():
 def hotDealsPage(page=1, limit=80):
     TARGET_URL = f"https://www.yogyaonline.co.id/hotdeals.html?p={page}&product_list_limit={limit}"
     dataHotDealsProduct = []
+    list_ids = []
     logging.info(f"Run the Scrapper page {page} and limit {limit}")
     req = requests.get(TARGET_URL)
 
@@ -140,11 +148,17 @@ def hotDealsPage(page=1, limit=80):
            if m is not None:
                found = m.group().replace("var dlObjects =", "")
                found = found.replace(";", "")
-    
+
     data_raw = json.loads(found)
-    for grouped_item in data_raw:
+    for index, grouped_item in enumerate(data_raw):
         dataEcommerce = grouped_item['ecommerce']
-        dataHotDealsProduct += dataEcommerce['impressions']
+        for item in dataEcommerce['impressions']:
+            if item['id'] not in list_ids:
+                dataHotDealsProduct.append(item)
+                list_ids.append(item['id'])
+            else:
+                logging.info(f"{item['name']} already exist")
+                productLink.pop(index)
 
     for key, value in enumerate(productLink):
         dataHotDealsProduct[key]['link'] = value
