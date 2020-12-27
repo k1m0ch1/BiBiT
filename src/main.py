@@ -8,9 +8,9 @@ import argparse
 
 from datetime import date, timedelta
 from notifier import runNotifier
-from yogyaonline import hotDealsPage
-from klikindomaret import promosiMingguIni, getCategories
-from alfacart import promotion, catalog as alfaCatalog
+from yogyaonline import hotDealsPage as yogyaPromo, getCategories as yogyaCategories
+from klikindomaret import promosiMingguIni as indoPromo, getCategories as indoCategories
+from alfacart import promotion as alfaPromo, catalog as alfaCatalog
 from config import DATA_DIR
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
@@ -20,45 +20,66 @@ def dataScrap(target: str, itemsType: str = 'all'):
     prevData = {}
     cData = {}
     if target == 'yogyaonline':
-        currData = hotDealsPage()
-        compiledData = []
-        index = 2
-        while not prevData == currData:
-            for item in currData:
-                compiledData.append(item)
-            prevData = currData
-            currData = hotDealsPage(page=index)
-            index += 1
-        cData = {'data': compiledData, 'date': TODAY_STRING }
+        cData = {'data': yogyaCategories(), 'date': TODAY_STRING }
+        # currData = yogyaPromo()
+        # compiledData = []
+        # index = 2
+        # while not prevData == currData:
+        #     for item in currData:
+        #         compiledData.append(item)
+        #     prevData = currData
+        #     currData = yogyaPromo(page=index)
+        #     index += 1
+        # cData = {'data': compiledData, 'date': TODAY_STRING }
     
     if target == 'klikindomaret':
 
         if itemsType == "all":
-            cData = {'data': promosiMingguIni(), 'date': TODAY_STRING }
-            cData = {'data': getCategories(), 'date': TODAY_STRING }
+            cData = [
+                {'data': indoPromo(), 'date': TODAY_STRING, 'type': 'promotion' },
+                {'data': indoCategories(), 'date': TODAY_STRING, 'type': 'catalog' }
+            ]
         elif itemsType == "promo":
-            cData = {'data': promosiMingguIni(), 'date': TODAY_STRING }
+            cData = {'data': indoPromo(), 'date': TODAY_STRING }
         elif itemsType == "catalog":
-            cData = {'data': getCategories(), 'date': TODAY_STRING }
+            cData = {'data': indoCategories(), 'date': TODAY_STRING }
 
     if target == 'alfacart':
-        cData = {'data': promotion(), 'date': TODAY_STRING }
-
         if itemsType == "all":
-            cData = {'data': promotion(), 'date': TODAY_STRING }
-            cData = {'data': catalog(), 'date': TODAY_STRING }
+            cData = [
+                {'data': alfaPromo(), 'date': TODAY_STRING , 'type': 'promotion'},
+                {'data': alfaCatalog(), 'date': TODAY_STRING, 'type': 'catalog' }
+            ]
         elif itemsType == "promo":
-            cData = {'data': promotion(), 'date': TODAY_STRING }
+            cData = {'data': alfaPromo(), 'date': TODAY_STRING }
         elif itemsType == "catalog":
-            cData = {'data': catalog(), 'date': TODAY_STRING }
+            cData = {'data': alfaCatalog(), 'date': TODAY_STRING }
 
-    if not os.path.isdir(f"{DATA_DIR}/{target}/{itemsType}"):
-        os.mkdir(f"{DATA_DIR}/{target}/{itemsType}")
+    if not itemsType == "all":
+        if not os.path.isdir(f"{DATA_DIR}/{target}/{itemsType}"):
+            os.mkdir(f"{DATA_DIR}/{target}/{itemsType}")
 
-    file_object = open(f'{DATA_DIR}/{target}/{itemsType}/{TODAY_STRING}.json', 'w+')
-    file_object.write(json.dumps(cData))
+        file_object = open(f'{DATA_DIR}/{target}/{itemsType}/{TODAY_STRING}.json', 'w+')
+        file_object.write(json.dumps(cData))
 
-    logging.info(f"== scrapping {target} success, saved to {DATA_DIR}/{target}/{itemsType}/{TODAY_STRING}.json")
+        # Backup for notifier, remove this after notifier is fixed
+        if target == "yogyaonline":
+            if not os.path.isdir(f"{DATA_DIR}/"):
+                os.mkdir(f"{DATA_DIR}/")
+
+            file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
+            file_object.write(json.dumps(cData))
+
+        logging.info(f"== scrapping {target} success, saved to {DATA_DIR}/{target}/{itemsType}/{TODAY_STRING}.json")
+    else:
+        for itemData in cData:
+            if not os.path.isdir(f"{DATA_DIR}/{target}/{itemData['type']}"):
+                os.mkdir(f"{DATA_DIR}/{target}/{itemData['type']}")
+s
+            file_object = open(f'{DATA_DIR}/{target}/{itemData["type"]}/{TODAY_STRING}.json', 'w+')
+            file_object.write(json.dumps(cData))
+
+            logging.info(f"== scrapping {target} success, saved to {DATA_DIR}/{target}/{itemData['type']}/{TODAY_STRING}.json")
 
     return True
 
@@ -113,7 +134,11 @@ if __name__ == "__main__":
         runNotifier()
 
     if args.command == 'do.scrap':
-        jobScrapper(args.target, args.scrap)            
+        if args.scrap == 'catalog':
+            yogyaCategories()
+            logging.info("IDLE")
+        else:
+            jobScrapper(args.target, args.scrap)
 
     while True:
         schedule.run_pending()
