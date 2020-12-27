@@ -8,7 +8,7 @@ import argparse
 
 from datetime import date, timedelta
 from notifier import runNotifier
-from yogyaonline import hotDealsPage as yogyaPromo, getCategories as yogyaCategories
+from yogyaonline import hotDeals as yogyaPromo, getCategories as yogyaCategories
 from klikindomaret import promosiMingguIni as indoPromo, getCategories as indoCategories
 from alfacart import promotion as alfaPromo, catalog as alfaCatalog
 from config import DATA_DIR
@@ -20,23 +20,21 @@ def dataScrap(target: str, itemsType: str = 'all'):
     prevData = {}
     cData = {}
     if target == 'yogyaonline':
-        cData = {'data': yogyaCategories(), 'date': TODAY_STRING }
-        # currData = yogyaPromo()
-        # compiledData = []
-        # index = 2
-        # while not prevData == currData:
-        #     for item in currData:
-        #         compiledData.append(item)
-        #     prevData = currData
-        #     currData = yogyaPromo(page=index)
-        #     index += 1
-        # cData = {'data': compiledData, 'date': TODAY_STRING }
+        if itemsType == "all":
+            cData = [
+                {'data': yogyaCategories(), 'date': TODAY_STRING, 'type': 'catalog' },
+                {'data': yogyaPromo(), 'date': TODAY_STRING, 'type': 'promo'}
+            ]
+        elif itemsType == 'promo':
+            cData = {'data': yogyaPromo(), 'date': TODAY_STRING }
+        elif itemsRtpe == 'catalog':
+            cData = {'data': yogyaCategories(), 'date': TODAY_STRING }
     
     if target == 'klikindomaret':
 
         if itemsType == "all":
             cData = [
-                {'data': indoPromo(), 'date': TODAY_STRING, 'type': 'promotion' },
+                {'data': indoPromo(), 'date': TODAY_STRING, 'type': 'promo' },
                 {'data': indoCategories(), 'date': TODAY_STRING, 'type': 'catalog' }
             ]
         elif itemsType == "promo":
@@ -47,7 +45,7 @@ def dataScrap(target: str, itemsType: str = 'all'):
     if target == 'alfacart':
         if itemsType == "all":
             cData = [
-                {'data': alfaPromo(), 'date': TODAY_STRING , 'type': 'promotion'},
+                {'data': alfaPromo(), 'date': TODAY_STRING , 'type': 'promo'},
                 {'data': alfaCatalog(), 'date': TODAY_STRING, 'type': 'catalog' }
             ]
         elif itemsType == "promo":
@@ -56,35 +54,30 @@ def dataScrap(target: str, itemsType: str = 'all'):
             cData = {'data': alfaCatalog(), 'date': TODAY_STRING }
 
     if not itemsType == "all":
-        if not os.path.isdir(f"{DATA_DIR}/{target}/{itemsType}"):
-            os.mkdir(f"{DATA_DIR}/{target}/{itemsType}")
 
         file_object = open(f'{DATA_DIR}/{target}/{itemsType}/{TODAY_STRING}.json', 'w+')
         file_object.write(json.dumps(cData))
 
         # Backup for notifier, remove this after notifier is fixed
         if target == "yogyaonline":
-            if not os.path.isdir(f"{DATA_DIR}/"):
-                os.mkdir(f"{DATA_DIR}/")
-
             file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
             file_object.write(json.dumps(cData))
 
         logging.info(f"== scrapping {target} success, saved to {DATA_DIR}/{target}/{itemsType}/{TODAY_STRING}.json")
     else:
         for itemData in cData:
-            if not os.path.isdir(f"{DATA_DIR}/{target}/{itemData['type']}"):
-                os.mkdir(f"{DATA_DIR}/{target}/{itemData['type']}")
-s
             file_object = open(f'{DATA_DIR}/{target}/{itemData["type"]}/{TODAY_STRING}.json', 'w+')
-            file_object.write(json.dumps(cData))
+            file_object.write(json.dumps(itemData))
 
             logging.info(f"== scrapping {target} success, saved to {DATA_DIR}/{target}/{itemData['type']}/{TODAY_STRING}.json")
+        # Backup for notifier, remove this after notifier is fixed
+            file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
+            file_object.write(json.dumps(cData[1]))
 
     return True
 
 def jobScrapper(target: str = 'all', itemsType: str = 'all'):
-    logging.info("=== worker is running")
+    logging.info(f"=== worker target to {target} with scraping mode {itemsType} is running")
 
     if target == 'all':
         for itemTarget in ['yogyaonline', 'alfacart', 'klikindomaret']:
@@ -97,12 +90,29 @@ def jobScrapper(target: str = 'all', itemsType: str = 'all'):
             logging.error("Fail Scrapping")
 
 if __name__ == "__main__":
+    REQUIREMENT_DIR = [
+        f"{DATA_DIR}",
+        f"{PARENT_DIR}/alfacart",
+        f"{PARENT_DIR}/alfacart/catalog",
+        f"{PARENT_DIR}/alfacart/promo",
+        f"{PARENT_DIR}/klikindomaret"
+        f"{PARENT_DIR}/klikindomaret/promo"
+        f"{PARENT_DIR}/klikindomaret/catalog"
+        f"{PARENT_DIR}/yogyaonline"
+        f"{PARENT_DIR}/yogyaonline/promo"
+        f"{PARENT_DIR}/yogyaonline/catalog"
+    ]
+
+    for dirr in REQUIREMENT_DIR:
+        if not os.path.isdir(dirr):
+            os.mkdir(dirr)
+
     parser = argparse.ArgumentParser(description='Process the BiBiT Job')
     parser.add_argument('command', 
         metavar ='command', 
         type=str, 
         choices=['notif', 'scrap', 'do.notif', 'do.scrap'],
-        help='a command to run the bibit Job')
+        help='a command to run the bibit Job, the choices is `notif`, `scrap`, `do.notif` and `do.scrap` ')
     
     parser.add_argument('--target', 
         metavar ='all, yogyaonline, klikindomaret, alfacart', 
@@ -119,6 +129,8 @@ if __name__ == "__main__":
         help='choices the items type you want to get')
 
     args = parser.parse_args()
+    
+    logging.info(f"=== The scrapper for {args.target} in page {args.scrap} will be running for")
 
     if args.command == 'notif':
         for PRIME_TIME in config.PRIME_TIME:
@@ -128,7 +140,7 @@ if __name__ == "__main__":
     if args.command == 'scrap':
         for SCRAPPING_TIME in config.SCRAPPING_TIME:
             logging.info(f"=== scrapper worker at {SCRAPPING_TIME} is queued")
-            schedule.every().day.at(SCRAPPING_TIME).do(jobScrapper)
+            schedule.every().day.at(SCRAPPING_TIME).do(jobScrapper, target=args.target, itemsType=args.scrap)
 
     if args.command == 'do.notif':
         runNotifier()

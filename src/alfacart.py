@@ -80,7 +80,20 @@ def promotion():
         else:
             for itemData in data:
                 if itemData["id"] not in compiledData['listIds']:
-                    compiledData['data'].append(itemData)
+                    compiledData['data'].append({
+						"name": itemData['name'],
+						"id": itemData['id'],
+						"sku": itemData['sku'],
+						"price": itemData['special_price'],
+						"brand": itemData['brand'],
+						"category": code,
+						"link": itemData['url'],
+						"promotion": {
+							"type": itemData['discount_percent'],
+							"description": "",
+							"original_price": itemData['price']
+						}
+					})
                     compiledData['listIds'].append(itemData["id"])
                 else:
                     continue
@@ -132,10 +145,10 @@ def catalog():
     categories = resp_category.json()['categories']
     compiledData['categories_id'] += categories
 
-    for categories in compiledData['categories_id']:
+    for categories in compiledData['categories_id'][0:2]:
         logging.info(categories['id'])
         BODY['category_id'] = categories['id']
-        randomWait(5, 10)
+        randomWait(60, 90)
         req = requests.post(TARGET_URL, json=BODY, headers=HEADERS, verify=False)
         data_raw = req.json()
         result = req.json()["result"]
@@ -149,7 +162,20 @@ def catalog():
         else:
             for itemData in data:
                 if itemData["id"] not in compiledData['listIds']:
-                    compiledData['data'].append(itemData)
+                    compiledData['data'].append({
+                          "name": itemData['name'],
+                          "id": itemData['id'],
+                          "sku": itemData['sku'],
+                          "price": itemData['special_price'],
+                          "brand": itemData['brand'],
+                          "category": categories['id'],
+                          "link": itemData['url'],
+                          "promotion": {
+                              "type": itemData['discount_percent'],
+                              "description": "",
+                              "original_price": itemData['price']
+                          }
+                      })
                     compiledData['listIds'].append(itemData["id"])
                 else:
                     continue
@@ -169,7 +195,20 @@ def catalog():
                             data = reqa.json()["result"]["result_products"]
                             for itemData in data:
                                 if itemData["id"] not in compiledData['listIds']:
-                                    compiledData['data'].append(itemData)
+                                    compiledData['data'].append({
+										"name": itemData['name'],
+										"id": itemData['id'],
+										"sku": itemData['sku'],
+										"price": itemData['special_price'],
+										"brand": itemData['brand'],
+										"category": categories['id'],
+										"link": itemData['url'],
+										"promotion": {
+											"type": itemData['discount_percent'],
+											"description": "",
+											"original_price": itemData['price']
+										}
+									})
                                     compiledData['listIds'].append(itemData["id"])
                             break
                         else:
