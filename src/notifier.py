@@ -34,7 +34,7 @@ def runNotifier():
         cheap = True if ori_diff > 0 else False
         cheap_text = 'Cheaper 🤑' if cheap else 'Expensive 🙄'
         logging.info(f"{dataToday['name']} is {cheap_text} {diff}")
-        promotion = f"{dataToday['promotion']['type'] or ''} {dataToday['promotion']['description'] or ''}" if "promotion" in dataToday else ""
+        promotion = f"{dataToday['promotion'].get('type', '')} {dataToday['promotion'].get('description', '')}" if "promotion" in dataToday else ""
         promotion = promotion.replace("\n", "")
         if platform == "discord":
             return f"\n🛒 [{dataToday['name']}]({dataToday['link']}) is {cheap_text} {diff} {promotion}"
