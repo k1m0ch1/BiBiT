@@ -33,7 +33,6 @@ def runNotifier(target: str):
         diff = -ori_diff if ori_diff < 0 else ori_diff
         cheap = True if ori_diff > 0 else False
         cheap_text = 'Cheaper 🤑' if cheap else 'Expensive 🙄'
-        # logging.info(f"{dataToday['name']} is {cheap_text} {diff}")
         promotion = f"{dataToday['promotion'].get('type', '')} {dataToday['promotion'].get('description', '')}" if "promotion" in dataToday else ""
         promotion = promotion.replace("\n", "")
         if platform == "discord":
@@ -63,14 +62,29 @@ def runNotifier(target: str):
 
     discord_message = [f"{target.capitalize()} Bot Price Today!\n Formula Yesterday - Today = Cheaper, Today - Yesterday = Expensive"]
     twitter_message = [""]
+    
+
+    message_tmp = []
 
     for dataToday in data['today']['data']:
         if dataToday['id'] in data['yesterday']['id']:
             index = data['yesterday']['id'].index(dataToday['id'])
+            diff = float(data['yesterday']['data'][index]['price']) - float(dataToday['price'])
+            if diff == 0: 
+                continue 
+            
             curr_message = {
                 "discord": SendMessage("discord", dataToday, data['yesterday']['data'][index]),
                 "twitter": SendMessage("twitter", dataToday, data['yesterday']['data'][index])
             }
+
+            if curr_message['discord'] in message_tmp:
+                # logging.info("Already Exist, Skip")
+                continue
+
+            logging.info(f"{dataToday['name']} is {'Cheap' if diff > 0 and diff != 0 else 'Expensive'} {diff}")
+
+            message_tmp.append(curr_message['discord'])
 
             discord_message = CharacterLimit("discord", curr_message['discord'], discord_message)
             twitter_message = CharacterLimit("twitter", curr_message['twitter'], twitter_message)
