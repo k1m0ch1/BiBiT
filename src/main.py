@@ -7,7 +7,7 @@ import os
 import argparse
 
 from datetime import date, timedelta
-from notifier import runNotifier
+from notifier import sendNotification
 from yogyaonline import hotDeals as yogyaPromo, getCategories as yogyaCategories
 from klikindomaret import promosiMingguIni as indoPromo, getCategories as indoCategories
 from alfacart import promotion as alfaPromo, catalog as alfaCatalog
@@ -61,7 +61,7 @@ def dataScrap(target: str, itemsType: str = 'all'):
         # Backup for notifier, remove this after notifier is fixed
         if target == "yogyaonline":
             file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
-            file_object.write(json.dumps(cData))
+            file_object.write(json.dumps(cData[1]))
 
         logging.info(f"== scrapping {target} success, saved to {DATA_DIR}/{target}/{itemsType}/{TODAY_STRING}.json")
     else:
@@ -70,7 +70,8 @@ def dataScrap(target: str, itemsType: str = 'all'):
             file_object.write(json.dumps(itemData))
 
             logging.info(f"== scrapping {target} success, saved to {DATA_DIR}/{target}/{itemData['type']}/{TODAY_STRING}.json")
-        # Backup for notifier, remove this after notifier is fixed
+        if target == "yogyaonline":
+            # Backup for notifier, remove this after notifier is fixed
             file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
             file_object.write(json.dumps(cData[1]))
 
@@ -135,7 +136,7 @@ if __name__ == "__main__":
     if args.command == 'notif':
         for PRIME_TIME in config.PRIME_TIME:
             logging.info(f"=== notification worker at {PRIME_TIME} is queued")
-            schedule.every().day.at(PRIME_TIME).do(runNotifier)
+            schedule.every().day.at(PRIME_TIME).do(sendNotification)
 
     if args.command == 'scrap':
         for SCRAPPING_TIME in config.SCRAPPING_TIME:
@@ -143,7 +144,7 @@ if __name__ == "__main__":
             schedule.every().day.at(SCRAPPING_TIME).do(jobScrapper, target=args.target, itemsType=args.scrap)
 
     if args.command == 'do.notif':
-        runNotifier()
+        sendNotification()
 
     if args.command == 'do.scrap':
         if args.scrap == 'catalog':

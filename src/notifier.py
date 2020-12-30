@@ -13,10 +13,10 @@ from config import DATA_DIR
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
 
-def runNotifier():
+def runNotifier(target: str):
     TODAY_STRING = date.today().strftime("%Y-%m-%d")
     YESTERDAY_STRING = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-    logging.info("== run the Notifier")
+    logging.info(f"== run the Notifier for {target}")
 
     def CharacterLimit(platform=str, message=str, data=list) -> list:
         CONFIGURATION = (len(data[len(data)-1])+len(message)) < 2000 if platform == "discord" else \
@@ -33,7 +33,7 @@ def runNotifier():
         diff = -ori_diff if ori_diff < 0 else ori_diff
         cheap = True if ori_diff > 0 else False
         cheap_text = 'Cheaper 🤑' if cheap else 'Expensive 🙄'
-        logging.info(f"{dataToday['name']} is {cheap_text} {diff}")
+        # logging.info(f"{dataToday['name']} is {cheap_text} {diff}")
         promotion = f"{dataToday['promotion'].get('type', '')} {dataToday['promotion'].get('description', '')}" if "promotion" in dataToday else ""
         promotion = promotion.replace("\n", "")
         if platform == "discord":
@@ -43,34 +43,37 @@ def runNotifier():
             f" {dataToday['link']}"
 
 
-    if not os.path.isfile(f'{DATA_DIR}/{YESTERDAY_STRING}.json'):
+    if not os.path.isfile(f'{DATA_DIR}/{target}/catalog/{YESTERDAY_STRING}.json'):
         print("There is no yesterday data file, you need to wait more")
-        sys.exit(0)
+        return
 
-    TODAY_FILE = open(f"{DATA_DIR}/{TODAY_STRING}.json", 'r').read()
-    YESTERDAY_FILE = open(f"{DATA_DIR}/{YESTERDAY_STRING}.json", 'r').read()
+    TODAY_FILE = open(f"{DATA_DIR}/{target}/catalog/{TODAY_STRING}.json", 'r').read()
+    YESTERDAY_FILE = open(f"{DATA_DIR}/{target}/catalog/{YESTERDAY_STRING}.json", 'r').read()
 
     data = {
-        'yesterday': json.loads(YESTERDAY_FILE)['data'],
-        'today': json.loads(TODAY_FILE)['data']
+        'yesterday': {
+            'data': json.loads(YESTERDAY_FILE)['data'],
+            'id': [ data['id'] for data in json.loads(YESTERDAY_FILE)['data']]
+        },
+        'today': {
+            'data': json.loads(TODAY_FILE)['data'],
+            'id': [ data['id'] for data in json.loads(TODAY_FILE)['data']]
+        }
     }
 
-    discord_message = ["Yogya Bot Price Today!\n Formula Yesterday - Today = Cheaper, Today - Yesterday = Expensive"]
+    discord_message = [f"{target.capitalize()} Bot Price Today!\n Formula Yesterday - Today = Cheaper, Today - Yesterday = Expensive"]
     twitter_message = [""]
 
-    for dataToday in data['today']:
-        for dataYesterday in data['yesterday']:
-            if dataToday['id'] in dataYesterday['id']:
-                if float(dataYesterday['price']) - float(dataToday['price']) == 0:
-                    continue
+    for dataToday in data['today']['data']:
+        if dataToday['id'] in data['yesterday']['id']:
+            index = data['yesterday']['id'].index(dataToday['id'])
+            curr_message = {
+                "discord": SendMessage("discord", dataToday, data['yesterday']['data'][index]),
+                "twitter": SendMessage("twitter", dataToday, data['yesterday']['data'][index])
+            }
 
-                curr_message = {
-                    "discord": SendMessage("discord", dataToday, dataYesterday),
-                    "twitter": SendMessage("twitter", dataToday, dataYesterday)
-                }
-
-                discord_message = CharacterLimit("discord", curr_message['discord'], discord_message)
-                twitter_message = CharacterLimit("twitter", curr_message['twitter'], twitter_message)
+            discord_message = CharacterLimit("discord", curr_message['discord'], discord_message)
+            twitter_message = CharacterLimit("twitter", curr_message['twitter'], twitter_message)
 
     if config.DISCORD_NOTIFICATION:
         logging.info("== sent to discord")
@@ -87,7 +90,7 @@ def runNotifier():
         auth.set_access_token(config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_TOKEN_SECRET)
         api = tweepy.API(auth)
         
-        parent = api.update_status(f"Yogya Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday, for a full list you can visit the https://www.yogyaonline.co.id/hotdeals.html")
+        parent = api.update_status(f"{target.capitalize()} Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday")
         parent_id = parent.id_str
         logging.info("Parent Message is created")
         index = 1
@@ -101,3 +104,7 @@ def runNotifier():
             parent_id = post.id_str
     else:
         logging.info("== sent twitter is disabled")
+
+def sendNotification():
+    for target in ['yogyaonline', 'alfacart', 'klikindomaret']:
+        runNotifier(target)
