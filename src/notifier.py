@@ -77,10 +77,18 @@ def runNotifier(target: str):
 
     if config.DISCORD_NOTIFICATION:
         logging.info("== sent to discord")
-        for message in discord_message:
-            sendMessage = requests.post(config.DISCORD_WEBHOOK_URL, json={'content': message}, headers={"Content-Type": "application/json"})
-            if not sendMessage.status_code == 204:
-                logging.error(f"ERROR, with status code , the message is not sent with value {message}")
+        for index, message in enumerate(discord_message):
+            with True:
+                randomize = randint(10, 20)
+                if index%5 == 0:
+                    randomize = 30
+                time.sleep(randomize)
+                sendMessage = requests.post(config.DISCORD_WEBHOOK_URL, json={'content': message}, headers={"Content-Type": "application/json"})
+                if not sendMessage.status_code == 204:
+                    logging.error(f"ERROR, with status code , the message is not sent with value {message}")
+                    logging.info("I'll retry send the message")
+                else:
+                    break
     else:
         logging.info("== sent discord is disabled")
     
@@ -93,11 +101,10 @@ def runNotifier(target: str):
         parent = api.update_status(f"{target.capitalize()} Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday")
         parent_id = parent.id_str
         logging.info("Parent Message is created")
-        index = 1
-        for message in twitter_message:
-            randomize = randint(4, 10)
+        for index, message in enumerate(twitter_message):
+            randomize = randint(10, 20)
             if index%5 == 0:
-                randomize = 20    
+                randomize = 30    
             logging.info(f"Sent Message to Thread {parent_id} with pause {randomize} second")
             time.sleep(randomize)
             post = api.update_status(message, parent_id)
