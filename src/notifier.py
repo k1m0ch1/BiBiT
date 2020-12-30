@@ -92,7 +92,7 @@ def runNotifier(target: str):
     if config.DISCORD_NOTIFICATION:
         logging.info("== sent to discord")
         for index, message in enumerate(discord_message):
-            with True:
+            while True:
                 randomize = randint(10, 20)
                 if index%5 == 0:
                     randomize = 30
