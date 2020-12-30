@@ -112,17 +112,20 @@ def runNotifier(target: str):
         auth.set_access_token(config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_TOKEN_SECRET)
         api = tweepy.API(auth)
         
-        parent = api.update_status(f"{target.capitalize()} Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday")
-        parent_id = parent.id_str
-        logging.info("Parent Message is created")
-        for index, message in enumerate(twitter_message):
-            randomize = randint(10, 20)
-            if index%5 == 0:
-                randomize = 30    
-            logging.info(f"Sent Message to Thread {parent_id} with pause {randomize} second")
-            time.sleep(randomize)
-            post = api.update_status(message, parent_id)
-            parent_id = post.id_str
+        try:
+            parent = api.update_status(f"{target.capitalize()} Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday")
+            parent_id = parent.id_str
+            logging.info("Parent Message is created")
+            for index, message in enumerate(twitter_message):
+                randomize = randint(10, 20)
+                if index%5 == 0:
+                    randomize = 30    
+                logging.info(f"Sent Message to Thread {parent_id} with pause {randomize} second")
+                time.sleep(randomize)
+                post = api.update_status(message, parent_id)
+                parent_id = post.id_str
+        except tweepy.TweepError as e:
+            logging.info(f"got error code {e.message[0]['code']} with message {e.message[0]['message']} when I want to post for the very first time, I think I'll exit to send to twitter")
     else:
         logging.info("== sent twitter is disabled")
 
