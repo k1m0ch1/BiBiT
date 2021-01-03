@@ -4,6 +4,7 @@ import os
 import logging
 import sys
 
+from bs4 import BeautifulSoup
 from datetime import date, timedelta
 from math import ceil
 from config import DATA_DIR
@@ -53,6 +54,15 @@ def promotion():
         "beli-banyak-lebih-murah"
     ]
 
+    promoPage = requests.get("https://www.alfacart.com/promo", headers={
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+    })
+    promoPageParser = BeautifulSoup(promoPage.text, 'html.parser')
+    getPromoLink = promoPageParser.find_all("a", {"class": "btn btn-block btn-sm btn-act-promo"})
+
+    for link in getPromoLink:
+        PROMO_CODE.append(link.get('href').split('/')[-1])
+
     requests.packages.urllib3.disable_warnings()
     requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
     try:
@@ -64,39 +74,42 @@ def promotion():
     compiledData = {
         "data": [],
         "listIds": []
-    }
+    }   
 
     for code in PROMO_CODE:
         logging.info(code)
         BODY['qtext'] = code
         req = requests.post(TARGET_URL, json=BODY, headers=HEADERS, verify=False)
         data_raw = req.json()
-        data = req.json()["result"]["result_products"]
-        logging.info(f'{req.json()["result"]["result_count"]} and actual {len(data)}')
-        if len(compiledData) == 0:
-            compiledData['data'] += data
-            for itemData in data:
-                compiledData['listIds'].append(itemData["id"])
-        else:
-            for itemData in data:
-                if itemData["id"] not in compiledData['listIds']:
-                    compiledData['data'].append({
-						"name": itemData['name'],
-						"id": itemData['id'],
-						"sku": itemData['sku'],
-						"price": itemData['special_price'],
-						"brand": itemData['brand'],
-						"category": code,
-						"link": itemData['url'],
-						"promotion": {
-							"type": itemData['discount_percent'],
-							"description": "",
-							"original_price": itemData['price']
-						}
-					})
+        if "result" in req.json():
+            data = req.json()["result"]["result_products"]
+            logging.info(f'{req.json()["result"]["result_count"]} and actual {len(data)}')
+            if len(compiledData) == 0:
+                compiledData['data'] += data
+                for itemData in data:
                     compiledData['listIds'].append(itemData["id"])
-                else:
-                    continue
+            else:
+                for itemData in data:
+                    if itemData["id"] not in compiledData['listIds']:
+                        compiledData['data'].append({
+                            "name": itemData['name'],
+                            "id": itemData['id'],
+                            "sku": itemData['sku'],
+                            "price": itemData['special_price'],
+                            "brand": itemData['brand'],
+                            "category": code,
+                            "link": itemData['url'],
+                            "promotion": {
+                                "type": itemData['discount_percent'],
+                                "description": "",
+                                "original_price": itemData['price']
+                            }
+                        })
+                        compiledData['listIds'].append(itemData["id"])
+                    else:
+                        continue
+        else:
+            logging.info(f"The promo code {code} is not ecist, skip and run next promo")
 
     return compiledData['data']
 
