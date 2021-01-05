@@ -125,7 +125,7 @@ def runNotifier(target: str):
                 post = api.update_status(message, parent_id)
                 parent_id = post.id_str
         except tweepy.TweepError as e:
-            logging.info(f"got error code {e.message[0]['code']} with message {e.message[0]['message']} when I want to post for the very first time, I think I'll exit to send to twitter")
+            logging.info(f"got error {e} when I want to post for the very first time, I think I'll exit to send to twitter")
     else:
         logging.info("== sent twitter is disabled")
 
