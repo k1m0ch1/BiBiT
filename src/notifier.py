@@ -116,7 +116,7 @@ def runNotifier(target: str):
             parent = api.update_status(f"{target.capitalize()} Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday")
             parent_id = parent.id_str
             logging.info("Parent Message is created")
-            twitter_message = twitter_message[0:400] if len(twitter_message) > 400 twitter_message
+            twitter_message = twitter_message[0:400] if len(twitter_message) > 400 else twitter_message
             for index, message in enumerate(twitter_message):
                 randomize = randint(10, 20)
                 if index%5 == 0:
