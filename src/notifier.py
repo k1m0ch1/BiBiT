@@ -93,7 +93,6 @@ def runNotifier(target: str):
         logging.info("== sent to discord")
         for index, message in enumerate(discord_message):
             while True:
-                randomize = randint(10, 20)
                 if index%5 == 0:
                     randomize = 30
                 time.sleep(randomize)
@@ -101,6 +100,7 @@ def runNotifier(target: str):
                 if not sendMessage.status_code == 204:
                     logging.error(f"ERROR, with status code , the message is not sent with value {message}")
                     logging.info("I'll retry send the message")
+                    randomize = randint(60, 70)
                 else:
                     break
     else:
@@ -116,6 +116,7 @@ def runNotifier(target: str):
             parent = api.update_status(f"{target.capitalize()} Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday")
             parent_id = parent.id_str
             logging.info("Parent Message is created")
+            twitter_message = twitter_message[0:400] if len(twitter_message) > 400 twitter_message
             for index, message in enumerate(twitter_message):
                 randomize = randint(10, 20)
                 if index%5 == 0:
