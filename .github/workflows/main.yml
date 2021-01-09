@@ -90,5 +90,5 @@ jobs:
           echo "pm2 start src/main.py --interpreter python3 --name BiBiT.klikindomaret.scrapper --ignore-watch ./data -- scrap --target klikindomaret" >> run.sh
           echo "pm2 start src/main.py --interpreter python3 --name BiBiT.notifier --ignore-watch ./data -- notif --scrap promo" >> run.sh
           chmod +x run.sh
-          bash run.sh
+          sh run.sh
           
