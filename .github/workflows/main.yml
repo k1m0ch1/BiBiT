@@ -91,4 +91,13 @@ jobs:
           echo "pm2 start src/main.py --interpreter python3 --name BiBiT.notifier --ignore-watch ./data -- notif --scrap promo" >> run.sh
           chmod +x run.sh
           sh run.sh
-          
+    - name: re-start
+      if: startsWith( github.ref, 'refs/tags/')
+      uses: JimCronqvist/action-ssh@master
+      with:
+        hosts: 'root@${{ secrets.REMOTE_HOST }}'
+        privateKey: ${{ secrets.SSH_PRIVATE_KEY }}
+        debug: true
+        command: |
+          cd ~/BiBiT
+          sh run.sh
