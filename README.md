@@ -6,25 +6,83 @@
 
 ## Introduction
 
-BiBiT or sprout in english, the bot in purpose to send the notification when the groceries price in `yogyaonline.co.id` is cheaper than yesterday, if you asking what is yogyaonline.co.id is the store that available online or offline, and yogya is one of the big group groceries mall in indonesia, they have Yogya, Griya and Yomart, so to get the groceries price in `yogyaonline.co.id` is the relevan source.
+BiBiT or sprout in english, the main purpose of this bot is to send the notification when the groceries price in `yogyaonline.co.id` `alfacart.com` and `klikindomaret.com` is changed within expensive or chepaer, the main feature of this bot is to scrap wether is `all item` or `only promotion` items in the website.
 
 ## How the bot work ?
 
-The bot is simply scrap from the page `https://www.yogyaonline.co.id/hotdeals.html` and store this everyday, so you will get a new price everyday. I don't believe with the discount price they offer to us, so to understant if the price is "real" discount, I just simply compare the today price with yesterday price
+This section is explain how the scrapper work, there is a two type of items "promotion" and "catalog" where the promotion only have an information that items have a promotion, the different with catalog is storing all information about the items.
+
+The vendor have a different format of name, but this scrapper is using the same model data
+
+```
+[
+    "data": [
+        {
+            "name": "string",
+            "id": "string",
+            "price": "string",
+            "brand": "string nullable",
+            "category": "string enum",
+            "list": "string enum",
+            "position": int,
+            "link": "string",
+            "promotion": {
+                "type": "string enum discount/promo",
+                "description": "",
+                "original_price": ""
+            }
+        }
+    ]
+]
+```
+
+and after data is compiled, it will be saved as date file name with JSON format (ex: `2020-12-12.json`) with the format json as explained above.
+
 
 ## The Difference between online and offline store
 
 so far I just fo to the 1 store offline, the online and offline have a different from 1000 - 15000
 
-## List to do
+## How to use
 
-1. prevent the twitter from mark the post as spam
-2. made a summary of product list with image and text
-2.1 every image held up to 15 item
-2.2 using PIL
-3. Command
-3.1 cheapest item today (with comparison)
-3.2 expensive item today (with comparison)
-4. SEMBAKO
-4.1 List the SEMBAKO ITEM
-4.2 analytic the SEMBAKO ITEM in yogya
+I recommended export the variable `DATA_DIR` where the data file will be stored
+
+run the following command `python3 src/main.py -h` will show the help like this
+
+```
+usage: main.py [-h] [--target all, yogyaonline, klikindomaret, alfacart] [--scrap all, promo, catalog] command
+
+Process the BiBiT Job
+
+positional arguments:
+  command               a command to run the bibit Job, the choices is `notif`, `scrap`, `do.notif` and `do.scrap`
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --target all, yogyaonline, klikindomaret, alfacart
+                        choices the target to be scrapped
+  --scrap all, promo, catalog
+                        choices the items type you want to get
+```
+
+## Command
+
+### scrap
+
+if you run `python3 src/main.py scrap` you will be scheduler scrapping following with the optinal arguments
+
+### notif
+
+if you run `python3 src/main.py notif` you will be scheduler notification to discord and twitter following with the optinal arguments
+
+### do.scrap
+
+if you run `python3 src/main.py do.scrap`, the program will scrapping following with the optinal arguments
+
+### do.notif
+
+if you run `python3 src/main.py do.notif`, the program will sent notification following with the optinal arguments
+
+# List todo
+
+1. made a public discord bot
