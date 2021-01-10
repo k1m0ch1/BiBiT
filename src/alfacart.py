@@ -99,6 +99,7 @@ def promotion():
                             "brand": itemData['brand'],
                             "category": code,
                             "link": itemData['url'],
+                            "image": itemData['image'],
                             "promotion": {
                                 "type": itemData['discount_percent'],
                                 "description": "",
@@ -109,7 +110,7 @@ def promotion():
                     else:
                         continue
         else:
-            logging.info(f"The promo code {code} is not ecist, skip and run next promo")
+            logging.info(f"The promo code {code} is not exist, skip and run next promo")
 
     return compiledData['data']
 
@@ -164,73 +165,78 @@ def catalog():
         randomWait(60, 90)
         req = requests.post(TARGET_URL, json=BODY, headers=HEADERS, verify=False)
         data_raw = req.json()
-        result = req.json()["result"]
-        data = result["result_products"]
-        result_count = result["result_count"]
-        logging.info(f'{result_count} and actual {len(data)}')
-        if len(compiledData) == 0:
-            compiledData['data'] += data
-            for itemData in data:
-                compiledData['listIds'].append(itemData["id"])
-        else:
-            for itemData in data:
-                if itemData["id"] not in compiledData['listIds']:
-                    compiledData['data'].append({
-                          "name": itemData['name'],
-                          "id": itemData['id'],
-                          "sku": itemData['sku'],
-                          "price": itemData['special_price'],
-                          "brand": itemData['brand'],
-                          "category": categories['id'],
-                          "link": itemData['url'],
-                          "promotion": {
-                              "type": itemData['discount_percent'],
-                              "description": "",
-                              "original_price": itemData['price']
-                          }
-                      })
+        if "result" in req.json():
+            result = req.json()["result"]
+            data = result["result_products"]
+            result_count = result["result_count"]
+            logging.info(f'{result_count} and actual {len(data)}')
+            if len(compiledData) == 0:
+                compiledData['data'] += data
+                for itemData in data:
                     compiledData['listIds'].append(itemData["id"])
-                else:
-                    continue
+            else:
+                for itemData in data:
+                    if itemData["id"] not in compiledData['listIds']:
+                        compiledData['data'].append({
+                            "name": itemData['name'],
+                            "id": itemData['id'],
+                            "sku": itemData['sku'],
+                            "price": itemData['special_price'],
+                            "brand": itemData['brand'],
+                            "category": categories['id'],
+                            "link": itemData['url'],
+                            "image": itemData['image'],
+                            "promotion": {
+                                "type": itemData['discount_percent'],
+                                "description": "",
+                                "original_price": itemData['price']
+                            }
+                        })
+                        compiledData['listIds'].append(itemData["id"])
+                    else:
+                        continue
 
-        if result_count > len(data):
-            max_page = ceil(result_count/200)
-            logging.info(f'Get {result_count} in total from {max_page} page') 
-            for page in range(1, max_page):
-                BODY['page'] = page+1
-                logging.info(BODY)
-                while True:
-                    # if BODY['page'] % 3 == 0:
-                    #     randomWait()
-                    reqa = requests.post(TARGET_URL, json=BODY, headers=HEADERS, verify=False)
-                    if reqa.status_code == 200:
-                        if "result" in reqa.json():
-                            data = reqa.json()["result"]["result_products"]
-                            for itemData in data:
-                                if itemData["id"] not in compiledData['listIds']:
-                                    compiledData['data'].append({
-										"name": itemData['name'],
-										"id": itemData['id'],
-										"sku": itemData['sku'],
-										"price": itemData['special_price'],
-										"brand": itemData['brand'],
-										"category": categories['id'],
-										"link": itemData['url'],
-										"promotion": {
-											"type": itemData['discount_percent'],
-											"description": "",
-											"original_price": itemData['price']
-										}
-									})
-                                    compiledData['listIds'].append(itemData["id"])
-                            break
+            if result_count > len(data):
+                max_page = ceil(result_count/200)
+                logging.info(f'Get {result_count} in total from {max_page} page') 
+                for page in range(1, max_page):
+                    BODY['page'] = page+1
+                    logging.info(BODY)
+                    while True:
+                        # if BODY['page'] % 3 == 0:
+                        #     randomWait()
+                        reqa = requests.post(TARGET_URL, json=BODY, headers=HEADERS, verify=False)
+                        if reqa.status_code == 200:
+                            if "result" in reqa.json():
+                                data = reqa.json()["result"]["result_products"]
+                                for itemData in data:
+                                    if itemData["id"] not in compiledData['listIds']:
+                                        compiledData['data'].append({
+                                            "name": itemData['name'],
+                                            "id": itemData['id'],
+                                            "sku": itemData['sku'],
+                                            "price": itemData['special_price'],
+                                            "brand": itemData['brand'],
+                                            "category": categories['id'],
+                                            "link": itemData['url'],
+                                            "image": itemData['image'],
+                                            "promotion": {
+                                                "type": itemData['discount_percent'],
+                                                "description": "",
+                                                "original_price": itemData['price']
+                                            }
+                                        })
+                                        compiledData['listIds'].append(itemData["id"])
+                                break
+                            else:
+                                retry(reqa)
+                                continue
                         else:
                             retry(reqa)
                             continue
-                    else:
-                        retry(reqa)
-                        continue
-                        
+        else:
+            logging.info(f"The catalog code {categories} is not exist, skip and run next promo")
+                            
                     
     return compiledData['data']
 

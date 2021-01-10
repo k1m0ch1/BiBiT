@@ -36,6 +36,7 @@ def getCategories():
                 getItem = parser.find_all("div", {"class": "box-item clearfix"})
                 for index, item in enumerate(getItem[0].find_all("div", {"class": "item"})):
                     link = f"{TARGET_URL}{item.find('a').get('href')}"
+                    image = item.find('img').get('data-src')
                     productID = item.find("div", {'class': f'sendby oksendby classsendby{index+1}'}).get('selecteds')
                     container = item.find('div', {'class': 'wrp-content'})
                     dikirimOleh = container.find('span', {'class': 'sendbyProduct'}).find('span').get('class')
@@ -53,6 +54,7 @@ def getCategories():
                             'id': productID,
                             'price': cleanUpCurrency(productPrice),
                             'link': link,
+                            'image': image,
                             "promotion": {
                                 "type": productPromotion,
                                 "original_price": productOldPrice
@@ -98,6 +100,7 @@ def promosiMingguIni():
         getItem = parser.find_all("div", {"class": "box-item clearfix"})
         for index, item in enumerate(getItem[0].find_all("div", {"class": "item"})):
             link = f"{TARGET_URL}{item.find('a').get('href')}"
+            image = item.find('img').get('data-src')
             productID = item.find("div", {'class': f'sendby oksendby classsendby{index+1}'}).get('selecteds')
             container = item.find('div', {'class': 'wrp-content'})
             dikirimOleh = container.find('span', {'class': 'sendbyProduct'}).find('span').get('class')
@@ -112,6 +115,7 @@ def promosiMingguIni():
                 'id': productID,
                 'price': cleanUpCurrency(productPrice),
                 'link': link,
+                'image': image,
                 "promotion": {
                     "type": productPromotion,
                     "original_price": productOldPrice

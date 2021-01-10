@@ -20,6 +20,8 @@ def scrap(URL, index):
     parser = BeautifulSoup(req.text, 'html.parser')
 
     productLink = [item['href'] for item in parser.find_all("ol", {"class": "products list items product-items"})[0].find_all("a", {"class": "product-item-link"}, href=True)]
+    productImages = [item.get('data-original') for item in parser.find_all("img", {"class": "product-image-photo lazy"})]
+    print(productLink)
     promotion = []
     for item in parser.find_all("div", {"class": "price-box price-final_price"}):
         tType = ""
@@ -69,6 +71,7 @@ def scrap(URL, index):
     for key, value in enumerate(productLink):
         dataProduct[key]['link'] = value
         dataProduct[key]['promotion'] = promotion[key]
+        dataProduct[key]['image'] = productImages[key]
 
     return dataProduct
 
@@ -114,6 +117,7 @@ def hotDealsPage(page=1, limit=80):
     parser = BeautifulSoup(req.text, 'html.parser')
 
     productLink = [item['href'] for item in parser.find_all("ol", {"class": "products list items product-items"})[0].find_all("a", {"class": "product-item-link"}, href=True)]
+    productImages = [item.get('data-original') for item in parser.find_all("img", {"class": "product-image-photo lazy"})]
     promotion = []
     for item in parser.find_all("div", {"class": "price-box price-final_price"}):
         tType = ""
@@ -163,6 +167,7 @@ def hotDealsPage(page=1, limit=80):
     for key, value in enumerate(productLink):
         dataHotDealsProduct[key]['link'] = value
         dataHotDealsProduct[key]['promotion'] = promotion[key]
+        dataHotDealsProduct[key]['image'] = productImages[key]
 
     return dataHotDealsProduct
 

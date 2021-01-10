@@ -9,6 +9,7 @@
             "list": "string enum",
             "position": int,
             "link": "string",
+            "image": "string",
             "promotion": {
                 "type": "string enum discount/promo",
                 "description": "",
