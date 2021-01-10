@@ -21,7 +21,6 @@ def scrap(URL, index):
 
     productLink = [item['href'] for item in parser.find_all("ol", {"class": "products list items product-items"})[0].find_all("a", {"class": "product-item-link"}, href=True)]
     productImages = [item.get('data-original') for item in parser.find_all("img", {"class": "product-image-photo lazy"})]
-    print(productLink)
     promotion = []
     for item in parser.find_all("div", {"class": "price-box price-final_price"}):
         tType = ""
