@@ -13,6 +13,15 @@ from klikindomaret import promosiMingguIni as indoPromo, getCategories as indoCa
 from alfacart import promotion as alfaPromo, catalog as alfaCatalog
 from config import DATA_DIR
 
+import uvicorn
+
+from fastapi import FastAPI
+from routes import root
+
+app = FastAPI()
+
+app.include_router(root.root)
+
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
 def dataScrap(target: str, itemsType: str = 'all'):
@@ -112,7 +121,7 @@ if __name__ == "__main__":
     parser.add_argument('command', 
         metavar ='command', 
         type=str, 
-        choices=['notif', 'scrap', 'do.notif', 'do.scrap'],
+        choices=['notif', 'scrap', 'do.notif', 'do.scrap', 'web.api'],
         help='a command to run the bibit Job, the choices is `notif`, `scrap`, `do.notif` and `do.scrap` ')
     
     parser.add_argument('--target', 
@@ -152,6 +161,9 @@ if __name__ == "__main__":
             logging.info("IDLE")
         else:
             jobScrapper(args.target, args.scrap)
+
+    if args.command == 'web.api':
+        uvicorn.run('main:app', host='127.0.0.1', port=8000, log_level="info", reload=True)
 
     while True:
         schedule.run_pending()
