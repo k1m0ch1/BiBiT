@@ -1,20 +1,20 @@
-from config import DATA_DIR
 from fastapi import APIRouter
-from datetime import date
-from typing import Optional
-import os 
+from fastapi.responses import HTMLResponse
 
-import json
+router = APIRouter()
 
-root = APIRouter()
+@router.get("/")
+async def index():
+    html_content =  """
+    <html>
+        <body>
+            Hi! Welcome to BiBiT API, the yogyaonline, alfacart and klikindomaret API
+            <br/><br/>
+            available API :
+            <br/>- yogyaonline catalog <a href='https://bibit-api.yggdrasil.id/yogyaonline/catalog'>https://bibit-api.yggdrasil.id/yogyaonline/catalog</a>
+            <br/>- yogyaonline catalog available date <a href='https://bibit-api.yggdrasil.id/yogyaonline/catalog'>https://bibit-api.yggdrasil.id/yogyaonline/catalog/available</a>
+        </body>
+    </html>
+    """
 
-@root.get("/")
-async def index(start: Optional[int] = 0, end: Optional[int] = 50, date: Optional[str] = date.today().strftime("%Y-%m-%d")):
-    FILENAME = f"{DATA_DIR}/yogyaonline/catalog/{date}.json"
-    if not os.path.exists(FILENAME):
-        return {"message": f"the data on this date is not exist"}
-    TARGETDB = json.loads(open(FILENAME, 'r').read())['data']
-    return {
-        "message": f"Success fetch data",
-        "data": TARGETDB[start:end]
-    }
+    return HTMLResponse(content=html_content, status_code=200)

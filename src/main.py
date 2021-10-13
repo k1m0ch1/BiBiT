@@ -16,11 +16,12 @@ from config import DATA_DIR
 import uvicorn
 
 from fastapi import FastAPI
-from routes import root
+from routes import root, yogyaonline
 
-app = FastAPI()
+app = FastAPI(redoc_url=None, docs_url=None)
 
-app.include_router(root.root)
+app.include_router(root.router)
+app.include_router(yogyaonline.router)
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
