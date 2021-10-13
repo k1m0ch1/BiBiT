@@ -11,6 +11,8 @@ beautifulsoup4 = "*"
 tweepy = "*"
 schedule = "*"
 flake8 = "*"
+fastapi = "*"
+uvicorn = "*"
 
 [requires]
 python_version = "3.8"
