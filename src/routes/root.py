@@ -12,7 +12,7 @@ async def index():
             <br/><br/>
             available API :
             <br/>- yogyaonline catalog <a href='https://bibit-api.yggdrasil.id/yogyaonline/catalog'>https://bibit-api.yggdrasil.id/yogyaonline/catalog</a>
-            <br/>- yogyaonline catalog available date <a href='https://bibit-api.yggdrasil.id/yogyaonline/catalog'>https://bibit-api.yggdrasil.id/yogyaonline/catalog/available</a>
+            <br/>- yogyaonline catalog available date <a href='https://bibit-api.yggdrasil.id/yogyaonline/catalog/available'>https://bibit-api.yggdrasil.id/yogyaonline/catalog/available</a>
         </body>
     </html>
     """
