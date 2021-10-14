@@ -17,7 +17,7 @@ def genAnalytic():
             dataCompile = json.loads(file_object)
         else:
             file_object = open(f'./{target}-analytics.json', 'w+')
-            file_object.write("")
+            file_object.write("{}")
 
         for tipe in ['catalog', 'promo']:
             print(f"Generate data {tipe}")
