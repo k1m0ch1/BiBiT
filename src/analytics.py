@@ -2,10 +2,10 @@ import json
 import os
 import config
 from os import listdir
-from datetime import date
+from datetime import date, datetime
 from os.path import isfile, join
 
-if __name__ == "__main__":
+def genAnalytic():
     for target in ['yogyaonline']:
         print(target)
         getLatestDate = date.today().strftime("%Y-%m-%d")
@@ -27,11 +27,21 @@ if __name__ == "__main__":
 
             for filename in listfiles:
 
-                NOW = filename.split(".json")[0]
+                file_object = open(FILENAME).read()
+                getLatestDate = json.loads(file_object)["latest_date"]
+                dataCompile = json.loads(file_object)
 
-                FILE = open(f"{dirr}/{filename}", "r").read()
+                NOW = filename.split(".json")[0]
+                NOWDATE = datetime.strptime(NOW, '%Y-%m-%d')
+                LASTDATE = datetime.strptime(getLatestDate, '%Y-%m-%d')
+
+                if NOW <= getLatestDate:
+                    print(f"File {dirr}/{filename} already gathered, skipped")
+                    continue
+                
+                FILEOPEN = open(f"{dirr}/{filename}", "r").read()
                 print(f"Load File {dirr}/{filename}")
-                each_file = json.loads(FILE)
+                each_file = json.loads(FILEOPEN)
 
                 for dataToday in each_file['data']:
                     if dataToday['name'] not in dataCompile:
@@ -45,4 +55,6 @@ if __name__ == "__main__":
                 file_object.write(json.dumps(dataCompile))
 
 
+if __name__ == "__main__":
+    genAnalytic()
 

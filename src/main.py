@@ -11,6 +11,7 @@ from notifier import sendNotification
 from yogyaonline import hotDeals as yogyaPromo, getCategories as yogyaCategories
 from klikindomaret import promosiMingguIni as indoPromo, getCategories as indoCategories
 from alfacart import promotion as alfaPromo, catalog as alfaCatalog
+from analytics import genAnalytic
 from config import DATA_DIR
 
 import uvicorn
@@ -122,7 +123,7 @@ if __name__ == "__main__":
     parser.add_argument('command', 
         metavar ='command', 
         type=str, 
-        choices=['notif', 'scrap', 'do.notif', 'do.scrap', 'web.api'],
+        choices=['notif', 'scrap', 'do.notif', 'do.scrap', 'web.api', 'analytics', 'gen.analytics'],
         help='a command to run the bibit Job, the choices is `notif`, `scrap`, `do.notif` and `do.scrap` ')
     
     parser.add_argument('--target', 
@@ -152,6 +153,14 @@ if __name__ == "__main__":
         for SCRAPPING_TIME in config.SCRAPPING_TIME:
             logging.info(f"=== scrapper worker at {SCRAPPING_TIME} is queued")
             schedule.every().day.at(SCRAPPING_TIME).do(jobScrapper, target=args.target, itemsType=args.scrap)
+
+    if args.command == 'analytics':
+        for GENERATE_TIME in config.GENERATE_TIME:
+            logging.info(f"=== Generate Analytics worker at {GENERATE_TIME} is queued")
+            schedule.every().day.at(GENERATE_TIME).do(genAnalytic)
+
+    if args.command == 'gen.analytics':
+        genAnalytic()
 
     if args.command == 'do.notif':
         sendNotification()
