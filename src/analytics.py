@@ -28,7 +28,7 @@ def genAnalytic():
             listfiles = [filename for filename in listdir(dirr) if isfile(join(dirr, filename))]
             print("I will merge all of this file")
 
-            for filename in listfiles[:20]:
+            for filename in listfiles:
 
                 file_object = open(FILE_NAME).read()
                 data = json.loads(file_object)
