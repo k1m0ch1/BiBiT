@@ -5,6 +5,7 @@ import config
 import json
 import os
 import argparse
+import sys
 
 from datetime import date, timedelta
 from notifier import sendNotification
@@ -161,6 +162,7 @@ if __name__ == "__main__":
 
     if args.command == 'gen.analytics':
         genAnalytic()
+        sys.exit(1)
 
     if args.command == 'do.notif':
         sendNotification()

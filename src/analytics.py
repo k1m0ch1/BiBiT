@@ -9,36 +9,39 @@ def genAnalytic():
     for target in ['yogyaonline']:
         print(target)
         getLatestDate = date.today().strftime("%Y-%m-%d")
-        FILENAME = f'./{target}-analytics.json'
+        FILE_NAME = f'./{target}-analytics.json'
         dataCompile = {"latest_date": ""}
-        if os.path.exists(FILENAME):
-            file_object = open(FILENAME).read()
-            getLatestDate = json.loads(file_object)["latest_date"]
+        if os.path.exists(FILE_NAME):
+            file_object = open(FILE_NAME).read()
+            data = json.loads(file_object)
+            if "latest_date" in data:
+                getLatestDate = json.loads(file_object)["latest_date"]
             dataCompile = json.loads(file_object)
         else:
             file_object = open(f'./{target}-analytics.json', 'w+')
-            file_object.write("{}")
+            file_object.write(json.dumps({"latest_date": ""}))
+            file_object.close()
 
-        for tipe in ['catalog', 'promo']:
+        for tipe in ['catalog']:
             print(f"Generate data {tipe}")
             dirr = f"{config.DATA_DIR}/{target}/{tipe}"
             listfiles = [filename for filename in listdir(dirr) if isfile(join(dirr, filename))]
             print("I will merge all of this file")
 
-            for filename in listfiles:
+            for filename in listfiles[:10]:
 
-                file_object = open(FILENAME).read()
+                file_object = open(FILE_NAME).read()
                 data = json.loads(file_object)
                 getLatestDate = date.today().strftime("%Y-%m-%d")
                 if "latest_date" in data:
-                    getLatestDate = json.loads(file_object)["latest_date"]
+                    getLatestDate = "1990-10-10" if data["latest_date"] == "" else data["latest_date"]
                 dataCompile = json.loads(file_object)
 
                 NOW = filename.split(".json")[0]
                 NOWDATE = datetime.strptime(NOW, '%Y-%m-%d')
                 LASTDATE = datetime.strptime(getLatestDate, '%Y-%m-%d')
 
-                if NOW <= getLatestDate:
+                if NOWDATE <= LASTDATE and getLatestDate != "":
                     print(f"File {dirr}/{filename} already gathered, skipped")
                     continue
                 
