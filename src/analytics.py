@@ -58,6 +58,7 @@ def genAnalytic():
 
                 file_object = open(f'./{target}-analytics.json', 'w+')
                 file_object.write(json.dumps(dataCompile))
+                file_object.close()
 
 
 if __name__ == "__main__":
