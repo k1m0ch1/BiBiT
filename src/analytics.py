@@ -28,7 +28,10 @@ def genAnalytic():
             for filename in listfiles:
 
                 file_object = open(FILENAME).read()
-                getLatestDate = json.loads(file_object)["latest_date"]
+                data = json.loads(file_object)["latest_date"]
+                getLatestDate = date.today().strftime("%Y-%m-%d")
+                if "latest_date" in data:
+                    getLatestDate = json.loads(file_object)["latest_date"]
                 dataCompile = json.loads(file_object)
 
                 NOW = filename.split(".json")[0]
