@@ -10,11 +10,11 @@ TARGET_URL = "https://www.klikindomaret.com"
 pageParam = "?productbrandid=&sortcol=&pagesize=50&startprice=&endprice=&attributes="
 
 
-def getCategories():
+def getDataCategories():
     resp = requests.get(TARGET_URL)
     parser = BeautifulSoup(resp.text, 'html.parser')
-    categoryClass = parser.find("div", {"class": "container-wrp-menu bg-white list-shadow"})
-    categories = [ link.get('href') for link in categoryClass.find_all('a')]
+    categoryClass = parser.find("div", {"class": "container-wrp-menu bg-white list-shadow list-category-mobile"})
+    categories = [link.get('href') for link in categoryClass.find_all('a')]
     products = []
     product_Ids = []
 
