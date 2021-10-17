@@ -1,11 +1,13 @@
 import requests
 import logging
+import sys
 from bs4 import BeautifulSoup
+from inspect import currentframe, getframeinfo
 
 from util import cleanUpCurrency
+from discordhook import sendMessage
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
-
 TARGET_URL = "https://www.klikindomaret.com"
 pageParam = "?productbrandid=&sortcol=&pagesize=50&startprice=&endprice=&attributes="
 
@@ -14,6 +16,10 @@ def getDataCategories():
     resp = requests.get(TARGET_URL)
     parser = BeautifulSoup(resp.text, 'html.parser')
     categoryClass = parser.find("div", {"class": "container-wrp-menu bg-white list-shadow list-category-mobile"})
+    if categoryClass is None:
+        frameinfo = getframeinfo(currentframe())
+        sM = sendMessage("Scrapper klikindomaret ga berfungsi", f"Error di {frameinfo.filename} {frameinfo.lineno}", "I can't get the categories data on klikindomaret.com probably class `container-wrp-menu bg-white list-shadow list-category-mobile` is changed, go check klikindomaret.com on the categories list")
+        return []
     categories = [link.get('href') for link in categoryClass.find_all('a')]
     products = []
     product_Ids = []
@@ -26,6 +32,9 @@ def getDataCategories():
         parser = BeautifulSoup(getPage.text, 'html.parser')
         if parser.find("select", {"id": "ddl-filtercategory-sort"}) is not None:
             getPageList = parser.find("select", {"class": "form-control pagelist"})
+            if getPageList is None:
+                frameinfo = getframeinfo(currentframe())
+                sM = sendMessage("Scrapper klikindomaret ga berfungsi", f"Error di {frameinfo.filename} {frameinfo.lineno}", f"I can't get the PageList from {TARGET_URL}{category}")
             maxPage = len(getPageList.find_all('option'))
 
             for page in range(0, maxPage):
