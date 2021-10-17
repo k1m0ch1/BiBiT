@@ -34,7 +34,8 @@ def getDataCategories():
             getPageList = parser.find("select", {"class": "form-control pagelist"})
             if getPageList is None:
                 frameinfo = getframeinfo(currentframe())
-                sM = sendMessage("Scrapper klikindomaret ga berfungsi", f"Error di {frameinfo.filename} {frameinfo.lineno}", f"I can't get the PageList from {TARGET_URL}{category}")
+                sM = sendMessage("Scrapper klikindomaret ga berfungsi", f"Error di {frameinfo.filename} {frameinfo.lineno}", f"I can't get the PageList from {TARGET_URL}{category}, probably have no data, but please check it first")
+                continue
             maxPage = len(getPageList.find_all('option'))
 
             for page in range(0, maxPage):
