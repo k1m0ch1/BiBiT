@@ -1,6 +1,5 @@
 import requests
-
-WEBHOOK_URL = "https://discord.com/api/webhooks/899322150761140244/-Z-09e7kX3YkL0Y87lME7IVtXFBjWKwFdMKH_wRlpWUHSUftYmSujUgtBz28qMxfVOE1"
+import config
 
 def sendMessage(content: str, title: str, description: str):
   template = {
@@ -13,6 +12,6 @@ def sendMessage(content: str, title: str, description: str):
     ]
   }
 
-  resp = requests.post(WEBHOOK_URL, json=template)
+  resp = requests.post(config.WEBHOOK_DISCORD_URL, json=template)
 
   return resp.status_code
