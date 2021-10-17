@@ -10,7 +10,7 @@ import sys
 from datetime import date, timedelta
 from notifier import sendNotification
 from yogyaonline import hotDeals as yogyaPromo, getCategories as yogyaCategories
-from klikindomaret import promosiMingguIni as indoPromo, getCategories as indoCategories
+from klikindomaret import promosiMingguIni as indoPromo, getDataCategories as indoCategories
 from alfacart import promotion as alfaPromo, catalog as alfaCatalog
 from analytics import genAnalytic
 from config import DATA_DIR
@@ -27,8 +27,10 @@ app.include_router(yogyaonline.router)
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
-def dataScrap(target: str, itemsType: str = 'all'):
+def dataScrap(target: str, itemsType: str):
     TODAY_STRING = date.today().strftime("%Y-%m-%d")
+    if itemsType == "":
+        itemsType = "all"
     prevData = {}
     cData = {}
     if target == 'yogyaonline':
@@ -39,11 +41,10 @@ def dataScrap(target: str, itemsType: str = 'all'):
             ]
         elif itemsType == 'promo':
             cData = {'data': yogyaPromo(), 'date': TODAY_STRING }
-        elif itemsRtpe == 'catalog':
+        elif itemsType == 'catalog':
             cData = {'data': yogyaCategories(), 'date': TODAY_STRING }
     
     if target == 'klikindomaret':
-
         if itemsType == "all":
             cData = [
                 {'data': indoPromo(), 'date': TODAY_STRING, 'type': 'promo' },
@@ -98,7 +99,7 @@ def jobScrapper(target: str = 'all', itemsType: str = 'all'):
             if not job:
                 logging.error("Fail Scrapping")
     else:
-        job = dataScrap(target)
+        job = dataScrap(target, itemsType)
         if not job:
             logging.error("Fail Scrapping")
 
@@ -166,13 +167,11 @@ if __name__ == "__main__":
 
     if args.command == 'do.notif':
         sendNotification()
+        sys.exit(1)
 
     if args.command == 'do.scrap':
-        if args.scrap == 'catalog':
-            yogyaCategories()
-            logging.info("IDLE")
-        else:
-            jobScrapper(args.target, args.scrap)
+        jobScrapper(args.target, args.scrap)
+        sys.exit(1)
 
     if args.command == 'web.api':
         uvicorn.run('main:app', host='127.0.0.1', port=8000, log_level="info", reload=True)
