@@ -20,7 +20,32 @@ def getDataCategories():
         frameinfo = getframeinfo(currentframe())
         sM = sendMessage("Scrapper klikindomaret ga berfungsi", f"Error di {frameinfo.filename} {frameinfo.lineno}", "I can't get the categories data on klikindomaret.com probably class `container-wrp-menu bg-white list-shadow list-category-mobile` is changed, go check klikindomaret.com on the categories list")
         return []
-    categories = [link.get('href') for link in categoryClass.find_all('a')]
+    
+    categories = list()
+    
+    # Untuk Sub_Category yang tidak ada anaknya
+    c1 = categoryClass.findAll('span', attrs = {'class':'clickMenu'})
+    for c1_element in c1:
+        try:
+            link = c1_element.find('a')['href']
+            categories.append(link)
+        except:
+            pass
+        
+    # Untuk Sub_Category yang ada anaknya
+    c2 = categoryClass.findAll('ul', attrs = {'class':'nd-kategori'})
+    for c2_element in c2:
+        try:
+            c2_element_menu = c2_element.find('li', attrs = {'class':'menu-seeall'})
+            for c2_element_menu_element in c2_element_menu:
+                try:
+                    link = c2_element_menu_element['href']
+                    categories.append(link)
+                except:
+                    pass
+        except:
+            pass
+
     products = []
     product_Ids = []
 
@@ -62,6 +87,7 @@ def getDataCategories():
                         products.append({
                             'name': productName,
                             'id': productID,
+                            'sub_category':category_name.replace("-1",""),
                             'price': cleanUpCurrency(productPrice),
                             'link': link,
                             'image': image,
