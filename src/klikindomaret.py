@@ -26,25 +26,17 @@ def getDataCategories():
     # Untuk Sub_Category yang tidak ada anaknya
     c1 = categoryClass.findAll('span', attrs = {'class':'clickMenu'})
     for c1_element in c1:
-        try:
+        if c1_element.a is not None:
             link = c1_element.find('a')['href']
             categories.append(link)
-        except:
-            pass
         
     # Untuk Sub_Category yang ada anaknya
     c2 = categoryClass.findAll('ul', attrs = {'class':'nd-kategori'})
     for c2_element in c2:
-        try:
-            c2_element_menu = c2_element.find('li', attrs = {'class':'menu-seeall'})
-            for c2_element_menu_element in c2_element_menu:
-                try:
-                    link = c2_element_menu_element['href']
-                    categories.append(link)
-                except:
-                    pass
-        except:
-            pass
+        c2_element_menu = c2_element.find('li', attrs = {'class':'menu-seeall'})
+        if c2_element_menu is not None:
+            link = c2_element_menu.a['href']
+            categories.append(link)
 
     products = []
     product_Ids = []
@@ -87,7 +79,7 @@ def getDataCategories():
                         products.append({
                             'name': productName,
                             'id': productID,
-                            'sub_category':category_name.replace("-1",""),
+                            'sub_category':category_name.replace("-1","").replace("-"," "),
                             'price': cleanUpCurrency(productPrice),
                             'link': link,
                             'image': image,
