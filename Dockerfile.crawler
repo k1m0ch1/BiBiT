@@ -1,7 +1,10 @@
 FROM python:3.8
 
+ARG PLATFORM
+ENV PLATFORM=${PLATFORM}
+
 WORKDIR /app
 
 ADD . /app/.
 RUN pip install -r requirements.txt
-CMD ["python", "src/main.py", "--target", "$PLATFORM", "--scrap", "catalog", "do.scrap"]
+CMD ["python", "src/main.py", "--target", "${PLATFORM}", "--scrap", "catalog", "do.scrap"]

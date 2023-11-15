@@ -1,0 +1,8 @@
+Dockerfile*
+*.db
+Pipfile
+Pipfile.lock
+data/*
+.github
+.gitignore
+.dockerignore
