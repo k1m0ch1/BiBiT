@@ -74,9 +74,10 @@ def dataScrap(target: str, itemsType: str):
         # Backup for notifier, remove this after notifier is fixed
         if target == "yogyaonline":
             file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
-            file_object.write(json.dumps(cData[1]))
+            file_object.write(json.dumps(cData))
 
         logging.info(f"== scrapping {target} success, saved to {DATA_DIR}/{target}/{itemsType}/{TODAY_STRING}.json")
+        
     else:
         for itemData in cData:
             file_object = open(f'{DATA_DIR}/{target}/{itemData["type"]}/{TODAY_STRING}.json', 'w+')
@@ -86,7 +87,7 @@ def dataScrap(target: str, itemsType: str):
         if target == "yogyaonline":
             # Backup for notifier, remove this after notifier is fixed
             file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
-            file_object.write(json.dumps(cData[1]))
+            file_object.write(json.dumps(cData))
 
     return True
 

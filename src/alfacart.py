@@ -3,12 +3,18 @@ import json
 import os
 import logging
 import sys
+import shortuuid
 
+from datetime import datetime
+from tqdm import tqdm
 from bs4 import BeautifulSoup
 from datetime import date, timedelta
 from math import ceil
 from config import DATA_DIR
 from util import randomWait
+from db import DBSTATE
+
+db = DBSTATE
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
@@ -77,13 +83,13 @@ def promotion():
     }   
 
     for code in PROMO_CODE:
-        logging.info(code)
+        # logging.info(code)
         BODY['qtext'] = code
         req = requests.post(TARGET_URL, json=BODY, headers=HEADERS, verify=False)
         data_raw = req.json()
         if "result" in req.json():
             data = req.json()["result"]["result_products"]
-            logging.info(f'{req.json()["result"]["result_count"]} and actual {len(data)}')
+            # logging.info(f'{req.json()["result"]["result_count"]} and actual {len(data)}')
             if len(compiledData) == 0:
                 compiledData['data'] += data
                 for itemData in data:
@@ -159,49 +165,43 @@ def catalog():
     categories = resp_category.json()['categories']
     compiledData['categories_id'] += categories
 
-    for categories in compiledData['categories_id']:
-        logging.info(categories['id'])
+    for categories in tqdm(compiledData['categories_id'], desc="Get all item from categories"):
+        # logging.info(categories['id'])
         BODY['category_id'] = categories['id']
-        randomWait(60, 90)
         req = requests.post(TARGET_URL, json=BODY, headers=HEADERS, verify=False)
-        data_raw = req.json()
         if "result" in req.json():
             result = req.json()["result"]
             data = result["result_products"]
             result_count = result["result_count"]
-            logging.info(f'{result_count} and actual {len(data)}')
+            # logging.info(f'{result_count} and actual {len(data)}')
             if len(compiledData) == 0:
                 compiledData['data'] += data
                 for itemData in data:
                     compiledData['listIds'].append(itemData["id"])
             else:
-                for itemData in data:
+                for itemData in tqdm(data, desc="save the items", leave=False):
                     if itemData["id"] not in compiledData['listIds']:
-                        compiledData['data'].append({
-                            "name": itemData['name'],
-                            "id": itemData['id'],
-                            "sku": itemData['sku'],
-                            "price": itemData['special_price'],
-                            "brand": itemData['brand'],
-                            "category": categories['id'],
-                            "link": itemData['url'],
-                            "image": itemData['image'],
-                            "promotion": {
-                                "type": itemData['discount_percent'],
-                                "description": "",
-                                "original_price": itemData['price']
-                            }
-                        })
+                        checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == itemData['sku']) | (db['items']['name'] == itemData['name']))
+
+                        now = datetime.now()
+
+                        if len(checkIdItem) > 0:
+                            idItem = checkIdItem[0][0]
+                            db["prices"].insert(shortuuid.uuid(), idItem, itemData['special_price'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
+                            db["discounts"].insert(shortuuid.uuid(), idItem, itemData['special_price'], itemData['price'], itemData['discount_percent'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
+                        else:
+                            idItem = shortuuid.uuid()
+                            db["items"].insert(idItem, itemData['sku'], itemData['name'], categories['id'], itemData['image'], itemData['url'], 'alfacart', now.strftime("%Y-%m-%d %H:%M:%S"))
+
                         compiledData['listIds'].append(itemData["id"])
                     else:
                         continue
 
             if result_count > len(data):
                 max_page = ceil(result_count/200)
-                logging.info(f'Get {result_count} in total from {max_page} page') 
-                for page in range(1, max_page):
+                # logging.info(f'Get {result_count} in total from {max_page} page') 
+                for page in tqdm(range(1, max_page), desc="get in Page", leave="False"):
                     BODY['page'] = page+1
-                    logging.info(BODY)
                     while True:
                         # if BODY['page'] % 3 == 0:
                         #     randomWait()
@@ -209,23 +209,19 @@ def catalog():
                         if reqa.status_code == 200:
                             if "result" in reqa.json():
                                 data = reqa.json()["result"]["result_products"]
-                                for itemData in data:
+                                for itemData in tqdm(data, desc="Get all the Items", leave=False):
                                     if itemData["id"] not in compiledData['listIds']:
-                                        compiledData['data'].append({
-                                            "name": itemData['name'],
-                                            "id": itemData['id'],
-                                            "sku": itemData['sku'],
-                                            "price": itemData['special_price'],
-                                            "brand": itemData['brand'],
-                                            "category": categories['id'],
-                                            "link": itemData['url'],
-                                            "image": itemData['image'],
-                                            "promotion": {
-                                                "type": itemData['discount_percent'],
-                                                "description": "",
-                                                "original_price": itemData['price']
-                                            }
-                                        })
+                                        checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == itemData['sku']) | (db['items']['name'] == itemData['name']))
+
+                                        now = datetime.now()
+
+                                        if len(checkIdItem) > 0:
+                                            idItem = checkIdItem[0][0]
+                                            db["prices"].insert(shortuuid.uuid(), idItem, itemData['special_price'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
+                                            db["discounts"].insert(shortuuid.uuid(), idItem, itemData['special_price'], itemData['price'], itemData['discount_percent'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
+                                        else:
+                                            idItem = shortuuid.uuid()
+                                            db["items"].insert(idItem, itemData['sku'], itemData['name'], categories['id'], itemData['image'], itemData['url'], 'alfacart', now.strftime("%Y-%m-%d %H:%M:%S"))
                                         compiledData['listIds'].append(itemData["id"])
                                 break
                             else:

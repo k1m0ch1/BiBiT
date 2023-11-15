@@ -5,7 +5,8 @@ import os
 import sys
 import logging
 from bs4 import BeautifulSoup
-from config import DATA_DIR
+from config import DATA_DIR, HEADERS
+from fp.fp import FreeProxy
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
@@ -107,15 +108,17 @@ def getCategories():
     
 
 def hotDealsPage(page=1, limit=80):
+    proxy = FreeProxy(google=True).get()
     TARGET_URL = f"https://www.yogyaonline.co.id/hotdeals.html?p={page}&product_list_limit={limit}"
     dataHotDealsProduct = []
     list_ids = []
     logging.info(f"Run the Scrapper page {page} and limit {limit}")
-    req = requests.get(TARGET_URL)
+    req = requests.get(TARGET_URL, headers=HEADERS, proxies={'http': proxy})
 
     parser = BeautifulSoup(req.text, 'html.parser')
 
     productLink = [item['href'] for item in parser.find_all("ol", {"class": "products list items product-items"})[0].find_all("a", {"class": "product-item-link"}, href=True)]
+    
     productImages = [item.get('data-original') for item in parser.find_all("img", {"class": "product-image-photo lazy"})]
     promotion = []
     for item in parser.find_all("div", {"class": "price-box price-final_price"}):
@@ -174,13 +177,16 @@ def hotDeals():
     prevData = {}
     cData = {}
     compiledData = []
-    index = 2
+    index = 1
     currData = compiledData
+    # blocked at page 6
     while not prevData == currData:
         for item in currData:
             compiledData.append(item)
         prevData = currData
         currData = hotDealsPage(index)
         index += 1
+        if index == 5:
+            break
     return compiledData
 

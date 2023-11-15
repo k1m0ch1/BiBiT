@@ -13,6 +13,11 @@ schedule = "*"
 flake8 = "*"
 fastapi = "*"
 uvicorn = "*"
+free-proxy = "*"
+tqdm = "*"
+sqllex = "*"
+shortuuid = "*"
+urllib3 = "<2"
 
 [requires]
 python_version = "3.8"
