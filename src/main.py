@@ -11,7 +11,8 @@ from datetime import date, timedelta
 from notifier import sendNotification
 from yogyaonline import hotDeals as yogyaPromo, getCategories as yogyaCategories
 from klikindomaret import promosiMingguIni as indoPromo, getDataCategories as indoCategories
-from alfacart import promotion as alfaPromo, catalog as alfaCatalog
+from alfacart import promotion as alfaPromo, catalog as alfaCatalogX
+from alfagift import catalog as alfaCatalog
 from analytics import genAnalytic
 from config import DATA_DIR
 
@@ -55,7 +56,7 @@ def dataScrap(target: str, itemsType: str):
         elif itemsType == "catalog":
             cData = {'data': indoCategories(), 'date': TODAY_STRING }
 
-    if target == 'alfacart':
+    if target == 'alfagift':
         if itemsType == "all":
             cData = [
                 {'data': alfaPromo(), 'date': TODAY_STRING , 'type': 'promo'},
@@ -95,7 +96,7 @@ def jobScrapper(target: str = 'all', itemsType: str = 'all'):
     logging.info(f"=== worker target to {target} with scraping mode {itemsType} is running")
 
     if target == 'all':
-        for itemTarget in ['yogyaonline', 'alfacart', 'klikindomaret']:
+        for itemTarget in ['yogyaonline', 'alfagift', 'klikindomaret']:
             job = dataScrap(itemTarget)
             if not job:
                 logging.error("Fail Scrapping")
@@ -107,9 +108,9 @@ def jobScrapper(target: str = 'all', itemsType: str = 'all'):
 if __name__ == "__main__":
     REQUIREMENT_DIR = [
         f"{DATA_DIR}",
-        f"{DATA_DIR}/alfacart",
-        f"{DATA_DIR}/alfacart/catalog",
-        f"{DATA_DIR}/alfacart/promo",
+        f"{DATA_DIR}/alfagift",
+        f"{DATA_DIR}/alfagift/catalog",
+        f"{DATA_DIR}/alfagift/promo",
         f"{DATA_DIR}/klikindomaret",
         f"{DATA_DIR}/klikindomaret/promo",
         f"{DATA_DIR}/klikindomaret/catalog",
@@ -130,10 +131,10 @@ if __name__ == "__main__":
         help='a command to run the bibit Job, the choices is `notif`, `scrap`, `do.notif` and `do.scrap` ')
     
     parser.add_argument('--target', 
-        metavar ='all, yogyaonline, klikindomaret, alfacart', 
+        metavar ='all, yogyaonline, klikindomaret, alfagift', 
         type=str, 
         default='all',
-        choices=['all', 'yogyaonline', 'klikindomaret', 'alfacart'],
+        choices=['all', 'yogyaonline', 'klikindomaret', 'alfagift'],
         help='choices the target to be scrapped')
 
     parser.add_argument('--scrap', 

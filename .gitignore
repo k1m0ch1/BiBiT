@@ -5,4 +5,4 @@ __pycache__
 *.json
 *backup
 *swp
-*.db
+*.db*

@@ -1,20 +1,80 @@
-from fastapi import APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends
+from db import DBSTATE
+import sqllex as sx
+from sqllex.constants import LIKE, ON
+from pydantic import BaseModel
+
+
+db = DBSTATE
 
 router = APIRouter()
 
-@router.get("/")
-async def index():
-    html_content =  """
-    <html>
-        <body>
-            Hi! Welcome to BiBiT API, the yogyaonline, alfacart and klikindomaret API
-            <br/><br/>
-            available API :
-            <br/>- yogyaonline catalog <a href='https://bibit-api.yggdrasil.id/yogyaonline/catalog'>https://bibit-api.yggdrasil.id/yogyaonline/catalog</a>
-            <br/>- yogyaonline catalog available date <a href='https://bibit-api.yggdrasil.id/yogyaonline/catalog/available'>https://bibit-api.yggdrasil.id/yogyaonline/catalog/available</a>
-        </body>
-    </html>
-    """
+class Search(BaseModel):
+    query: str
 
-    return HTMLResponse(content=html_content, status_code=200)
+@router.get("/lol")
+def lol():
+    return {"message": "Halo bang"}
+
+@router.post("/search")
+def search(search: Search):
+    items = db.select(
+        TABLE='items',
+        SELECT=[
+            db['items']['name'],
+            db['items']['link'],
+            db['items']['source'],
+            db['items']['image'],
+            db['prices']['price']
+        ],
+        JOIN=(
+            (
+                sx.INNER_JOIN, db['prices'],
+                ON, db['items']['id'] == db['prices']['items_id']
+            )
+        ),
+        WHERE=(
+            (db['items']['name'] |LIKE| f'%{search.query}%')
+        ),
+        GROUP_BY=[
+            db['items']['name']
+        ]
+    )
+    result = []
+    for item in items:
+        dataModels = {
+            "name": item[0],
+            "link": item[1],
+            "source": item[2],
+            "image": item[3],
+            "prices": item[4]
+        }
+        result.append(dataModels)
+    # items = db.executescript(
+    #     """
+    #     SELECT DISTINCT
+    #         items.name, 
+    #         items.link, 
+    #         items.source, 
+    #         items.image, 
+    #         prices.price, 
+    #         prices.created_at, 
+    #         discounts.discount_price, 
+    #         discounts.original_price, 
+    #         discounts.percentage
+    #     FROM
+    #         items
+    #         INNER JOIN
+    #         prices
+    #         ON 
+    #             items.id = prices.items_id
+    #         INNER JOIN
+    #         discounts
+    #         ON 
+    #             items.id = discounts.items_id
+    #     WHERE
+    #         items.name LIKE '%mimi%susu%'
+    #     """
+    # )
+    # print(items)
+    return result
