@@ -9,6 +9,7 @@ exceptiongroup==1.1.3
 fastapi==0.104.1
 flake8==6.1.0
 free-proxy==1.1.1
+greenlet==3.0.1
 h11==0.14.0
 idna==3.4
 loguru==0.6.0
@@ -16,8 +17,8 @@ lxml==4.9.3
 mccabe==0.7.0
 oauthlib==3.2.2
 pycodestyle==2.11.1
-pydantic==2.4.2
-pydantic_core==2.10.1
+pydantic==2.5.1
+pydantic_core==2.14.3
 pyflakes==3.1.0
 requests==2.31.0
 requests-oauthlib==1.3.1
@@ -25,6 +26,7 @@ schedule==1.2.1
 shortuuid==1.0.11
 sniffio==1.3.0
 soupsieve==2.5
+SQLAlchemy==2.0.23
 sqllex==0.3.0.post2
 starlette==0.27.0
 tqdm==4.66.1
