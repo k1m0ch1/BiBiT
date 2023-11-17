@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
-from db import DBSTATE
+from db import DBAPI
 import sqllex as sx
 from sqllex.constants import LIKE, ON
 from pydantic import BaseModel
 
 
-db = DBSTATE
+db = DBAPI
 
 router = APIRouter()
 
