@@ -52,6 +52,7 @@ from sqllex import SQLite3x, TEXT, NOT_NULL, INTEGER, PRIMARY_KEY, UNIQUE, FOREI
 
 #     items = relationship("Item")
 
+DVAPI = SQLite3x(path='indiemart.db',check_same_thread=False)
 
 DBSTATE = SQLite3x(
     path='crawl.db',
