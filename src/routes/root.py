@@ -3,6 +3,7 @@ from db import DBAPI
 import sqllex as sx
 from sqllex.constants import LIKE, ON
 from pydantic import BaseModel
+from typing import Union
 
 
 db = DBAPI
@@ -11,6 +12,7 @@ router = APIRouter()
 
 class Search(BaseModel):
     query: str
+    source: Union[str, None] = None
 
 @router.get("/lol")
 def lol():
@@ -18,6 +20,9 @@ def lol():
 
 @router.post("/search")
 def search(search: Search):
+    searchCondition = ((db['items']['name'] |LIKE| f'%{search.query}%') & (db['items']['source'] != 'alfacart'))
+    if search.source != "" or search.source is not None:
+        searchCondition = (searchCondition & (db['items']['source'] == search.source))
     items = db.select(
         TABLE='items',
         SELECT=[
@@ -34,7 +39,7 @@ def search(search: Search):
             )
         ),
         WHERE=(
-            (db['items']['name'] |LIKE| f'%{search.query}%')
+            searchCondition
         ),
         GROUP_BY=[
             db['items']['name']

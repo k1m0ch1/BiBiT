@@ -13,6 +13,7 @@ from db import DBSTATE
 from util import cleanUpCurrency
 from discordhook import sendMessage
 from sqllex import SQLite3x, TEXT, NOT_NULL, INTEGER, PRIMARY_KEY, UNIQUE, FOREIGN_KEY, ALL
+from sqllex.constants import LIKE, ON
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 TARGET_URL = "https://www.klikindomaret.com"
@@ -114,8 +115,12 @@ def getDataCategories():
                     checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == item['id']) | (db['items']['name'] == item['name']))
                     if len(checkIdItem) > 0:
                         idItem = checkIdItem[0][0]
-                        db["prices"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(productPrice), "", now.strftime("%Y-%m-%d %H:%M:%S"))
-                        db["discounts"].insert(shortuuid.uuid(), idItem, item['price'], productOldPrice, productPromotion, "", now.strftime("%Y-%m-%d %H:%M:%S"))
+                        checkPrices = db.select(TABLE='prices', SELECT='id', WHERE=(db['prices']['created_at'] |LIKE| f'{now.strftime("%Y-%m-%d")}%'))
+                        if len(checkPrices) == 0:
+                            db["prices"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(productPrice), "", now.strftime("%Y-%m-%d %H:%M:%S"))
+                        checkDiscounts = db.select(TABLE='discounts', SELECT='id', WHERE=(db['discounts']['created_at'] |LIKE| f'{now.strftime("%Y-%m-%d")}%'))
+                        if len(checkDiscounts) == 0:
+                            db["discounts"].insert(shortuuid.uuid(), idItem, item['price'], productOldPrice, productPromotion, "", now.strftime("%Y-%m-%d %H:%M:%S"))
                     else:
                         idItem = shortuuid.uuid()
                         db["items"].insert(idItem, item['id'], item['name'], item['sub_category'], item['image'], item['link'], 'klikindomaret', now.strftime("%Y-%m-%d %H:%M:%S"))
