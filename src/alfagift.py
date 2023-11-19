@@ -63,25 +63,8 @@ def catalog():
 
             if len(checkIdItem) > 0:
                 idItem = checkIdItem[0][0]
-                checkPrices = db.select(TABLE='prices', SELECT='id', WHERE=(db['prices']['created_at'] |LIKE| f'{now.strftime("%Y-%m-%d")}%'))
-                if len(checkPrices) == 0:
-                    db["prices"].insert(shortuuid.uuid(), idItem, item['finalPrice'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
-                elif len(checkPrices) > 0:
-                    db["prices"].update(SET={
-                        "price": item['finalPrice'],
-                        "created_at": now.strftime("%Y-%m-%d %H:%M:%S")
-                    },
-                    WHERE=(db['prices']['id'] == checkPrices[0][0]))
-                checkDiscounts = db.select(TABLE='discounts', SELECT='id', WHERE=(db['discounts']['created_at'] |LIKE| f'{now.strftime("%Y-%m-%d")}%'))
-                if len(checkDiscounts) == 0:
-                    db["discounts"].insert(shortuuid.uuid(), idItem, item['finalPrice'], item['basePrice'], item['discountPercent'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
-                elif len(checkDiscounts) > 0:
-                    db["discounts"].update(SET={
-                        "discount_price": item['finalPrice'],
-                        "percentage": item['discountPercent'],
-                        "created_at": now.strftime("%Y-%m-%d %H:%M:%S")
-                    },
-                    WHERE=(db['discounts']['id'] == checkDiscounts[0][0]))
+                db["prices"].insert(shortuuid.uuid(), idItem, item['finalPrice'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
+                db["discounts"].insert(shortuuid.uuid(), idItem, item['finalPrice'], item['basePrice'], item['discountPercent'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
             else:
                 db["items"].insert(item['productId'], item['sku'], item['productName'], categoryData['currentCategoryName'], item['image'], f"https://alfagift.id/p/{item['productId']}", 'alfagift', now.strftime("%Y-%m-%d %H:%M:%S"))
 
