@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends
 from db import DBAPI
 import sqllex as sx
-from sqllex.constants import LIKE, ON
+from sqllex.constants import  ON, LIKE
 from pydantic import BaseModel
 from typing import Union
+from datetime import datetime
 
 
 db = DBAPI
@@ -20,9 +21,12 @@ def lol():
 
 @router.post("/search")
 def search(search: Search):
-    searchCondition = ((db['items']['name'] |LIKE| f'%{search.query}%') & (db['items']['source'] != 'alfacart'))
-    if search.source != "" or search.source is not None:
-        searchCondition = (searchCondition & (db['items']['source'] == search.source))
+    now = datetime.now()
+    today = now.strftime("%Y-%m-%d")
+    querySearch = f'%{search.query}%'
+    searchCondition =  (db['items']['source'] != 'alfacart') & (db['items']['name'] |LIKE| querySearch) & (db['prices']['created_at'] |LIKE| f'{today}%')
+    if search.source is not None:
+        searchCondition = (searchCondition & (db['items']['source'] == search.source)) if len(search.source) > 0 else searchCondition
     items = db.select(
         TABLE='items',
         SELECT=[
@@ -38,9 +42,8 @@ def search(search: Search):
                 ON, db['items']['id'] == db['prices']['items_id']
             )
         ),
-        WHERE=(
-            searchCondition
-        ),
+        WHERE=searchCondition,
+        ORDER_BY=(db['prices']['price'], 'ASC'),
         GROUP_BY=[
             db['items']['name']
         ]
@@ -54,7 +57,8 @@ def search(search: Search):
             "image": item[3],
             "prices": item[4]
         }
-        result.append(dataModels)
+        if item[4] > 0:
+            result.append(dataModels)
     # items = db.executescript(
     #     """
     #     SELECT DISTINCT

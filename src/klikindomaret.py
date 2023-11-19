@@ -118,9 +118,22 @@ def getDataCategories():
                         checkPrices = db.select(TABLE='prices', SELECT='id', WHERE=(db['prices']['created_at'] |LIKE| f'{now.strftime("%Y-%m-%d")}%'))
                         if len(checkPrices) == 0:
                             db["prices"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(productPrice), "", now.strftime("%Y-%m-%d %H:%M:%S"))
+                        elif len(checkPrices) > 0:
+                            db["prices"].update(SET={
+                                "price": cleanUpCurrency(productPrice),
+                                "created_at": now.strftime("%Y-%m-%d %H:%M:%S")
+                            },
+                            WHERE=(db['prices']['id'] == checkPrices[0][0]))
                         checkDiscounts = db.select(TABLE='discounts', SELECT='id', WHERE=(db['discounts']['created_at'] |LIKE| f'{now.strftime("%Y-%m-%d")}%'))
                         if len(checkDiscounts) == 0:
                             db["discounts"].insert(shortuuid.uuid(), idItem, item['price'], productOldPrice, productPromotion, "", now.strftime("%Y-%m-%d %H:%M:%S"))
+                        elif len(checkDiscounts) > 0:
+                            db["discounts"].update(SET={
+                                "discount_price": item['price'],
+                                "percentage": productPromotion,
+                                "created_at": now.strftime("%Y-%m-%d %H:%M:%S")
+                            },
+                            WHERE=(db['discounts']['id'] == checkDiscounts[0][0]))
                     else:
                         idItem = shortuuid.uuid()
                         db["items"].insert(idItem, item['id'], item['name'], item['sub_category'], item['image'], item['link'], 'klikindomaret', now.strftime("%Y-%m-%d %H:%M:%S"))
