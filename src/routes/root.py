@@ -22,9 +22,13 @@ class Sama(BaseModel):
     item_id: str
     with_item_id: str
 
-@router.get("/lol")
+@router.get("/")
 def lol():
-    return {"message": "Halo bang"}
+    return {"message": "Misi bwang, API bikinan k1m0ch1 ama r17x"}
+
+@router.get("/stat")
+def stat():
+    return {"message": "Misi bwang, API bikinan k1m0ch1 ama r17x"}
 
 @router.post("/sama")
 def sama(sama: Sama):

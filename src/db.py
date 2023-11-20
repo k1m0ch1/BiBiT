@@ -126,13 +126,15 @@ loi = {
 }
 
 listIndexes = db.execute(script="SELECT name FROM sqlite_master WHERE type='index'")
+li = []
+
+for ll in listIndexes:
+    li.append(ll[0])
 
 listOfIndexes = loi.keys()
 
-for name in listIndexes:
-    n = name[0]
-    if n not in listOfIndexes:
-        if n[0:3] == "idx":
-            db.execute(script=loi[n])
-        else:
-            continue
+for name in listOfIndexes:
+    if name not in ll:
+        db.execute(script=loi[n])
+    else:
+        continue
