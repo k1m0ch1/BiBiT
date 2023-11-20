@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends
 from db import DBAPI
 import sqllex as sx
 from sqllex.constants import  ON, LIKE
+import shortuuid
 from pydantic import BaseModel
 from typing import Union
+from datetime import date, timedelta
 from datetime import datetime
 
 
@@ -14,10 +16,22 @@ router = APIRouter()
 class Search(BaseModel):
     query: str
     source: Union[str, None] = None
+    date: Union[str, None] = None
+
+class Sama(BaseModel):
+    item_id: str
+    with_item_id: str
 
 @router.get("/lol")
 def lol():
     return {"message": "Halo bang"}
+
+@router.post("/sama")
+def sama(sama: Sama):
+    now = datetime.now()
+    db["item_item"].insert(
+        shortuuid.uuid(), 
+        sama.item_id, sama.with_item_id, "PROPOSED", now.strftime("%Y-%m-%d %H:%M:%S"), now.strftime("%Y-%m-%d %H:%M:%S"))
 
 @router.post("/search")
 def search(search: Search):
