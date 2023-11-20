@@ -110,19 +110,19 @@ DBSTATE = SQLite3x(
 db = DBSTATE
 
 loi = {
-    "idx_items_sku": "CREATE UNIQUE INDEX idx_items_sku ON items(sku)",
-    "idx_items_name": "CREATE UNIQUE INDEX idx_items_name ON items(name)", 
-    "idx_items_source": "CREATE UNIQUE INDEX idx_items_source ON items(source)",
-    "idx_items_created_at": "CREATE UNIQUE INDEX idx_items_created_at ON items(created_at)", 
-    "idx_prices_price": "CREATE UNIQUE INDEX idx_prices_price ON prices(price)",
-    "idx_prices_items_id": "CREATE UNIQUE INDEX idx_prices_items_id ON prices(items_id)",
-    "idx_prices_created_at": "CREATE UNIQUE INDEX idx_prices_created_at ON prices(created_at)",
-    "idx_discounts_discount_price": "CREATE UNIQUE INDEX idx_discounts_discount_price ON discounts(discount_price)",
-    "idx_discounts_items_id": "CREATE UNIQUE INDEX idx_discounts_items_id ON discounts(items_id)",
-    "idx_discounts_original_price": "CREATE UNIQUE INDEX idx_discounts_original_price ON discounts(original_price)",
-    "idx_discounts_created_at": "CREATE UNIQUE INDEX idx_discounts_created_at ON discounts(created_at)",
-    "idx_item_item_item_id": "CREATE UNIQUE INDEX idx_item_item_item_id ON item_item(item_id)",
-    "idx_item_item_with_item_id": "CREATE UNIQUE INDEX idx_item_item_with_item_id ON item_item(with_item_id)",
+    "idx_items_sku": "CREATE INDEX idx_items_sku ON items(sku)",
+    "idx_items_name": "CREATE INDEX idx_items_name ON items(name)", 
+    "idx_items_source": "CREATE INDEX idx_items_source ON items(source)",
+    "idx_items_created_at": "CREATE INDEX idx_items_created_at ON items(created_at)", 
+    "idx_prices_price": "CREATE INDEX idx_prices_price ON prices(price)",
+    "idx_prices_items_id": "CREATE INDEX idx_prices_items_id ON prices(items_id)",
+    "idx_prices_created_at": "CREATE INDEX idx_prices_created_at ON prices(created_at)",
+    "idx_discounts_discount_price": "CREATE INDEX idx_discounts_discount_price ON discounts(discount_price)",
+    "idx_discounts_items_id": "CREATE INDEX idx_discounts_items_id ON discounts(items_id)",
+    "idx_discounts_original_price": "CREATE INDEX idx_discounts_original_price ON discounts(original_price)",
+    "idx_discounts_created_at": "CREATE INDEX idx_discounts_created_at ON discounts(created_at)",
+    "idx_item_item_item_id": "CREATE INDEX idx_item_item_item_id ON item_item(item_id)",
+    "idx_item_item_with_item_id": "CREATE INDEX idx_item_item_with_item_id ON item_item(with_item_id)",
 }
 
 listIndexes = db.execute(script="SELECT name FROM sqlite_master WHERE type='index'")
@@ -134,7 +134,7 @@ for ll in listIndexes:
 listOfIndexes = loi.keys()
 
 for name in listOfIndexes:
-    if name not in ll:
-        db.execute(script=loi[n])
+    if name not in li:
+        db.execute(script=loi[name])
     else:
         continue
