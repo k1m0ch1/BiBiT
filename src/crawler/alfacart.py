@@ -10,7 +10,6 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 from datetime import date, timedelta
 from math import ceil
-from config import DATA_DIR
 from util import randomWait
 from db import DBSTATE
 

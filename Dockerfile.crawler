@@ -7,4 +7,4 @@ WORKDIR /app
 
 ADD . /app/.
 RUN pip install -r requirements.txt
-CMD ["sh", "-c", "python src/main.py --target ${PLATFORM} --scrap catalog do.scrap"]
+CMD ["sh", "-c", "python src/main.py --target ${PLATFORM} do.scrap"]

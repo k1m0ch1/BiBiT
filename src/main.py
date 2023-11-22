@@ -9,22 +9,22 @@ import sys
 
 from datetime import date, timedelta
 from notifier import sendNotification
-from yogyaonline import hotDeals as yogyaPromo, getCategories as yogyaCategories
-from klikindomaret import promosiMingguIni as indoPromo, getDataCategories as indoCategories
-from alfacart import promotion as alfaPromo, catalog as alfaCatalogX
-from alfagift import catalog as alfaCatalog
+from crawler.yogyaonline import hotDeals as yogyaPromo, getCategories as yogyaCategories
+from crawler.klikindomaret import promosiMingguIni as indoPromo, getDataCategories as indoCategories
+from crawler.alfagift import catalog as alfaCatalog
 from analytics import genAnalytic
 from config import DATA_DIR
 
 import uvicorn
 
 from fastapi import FastAPI
-from routes import root, yogyaonline
+from routes import root, yogyaonline, belanja
 
 app = FastAPI(redoc_url=None, docs_url=None)
 
 app.include_router(root.router)
-app.include_router(yogyaonline.router)
+app.include_router(belanja.router)
+#app.include_router(yogyaonline.router)
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
@@ -32,7 +32,6 @@ def dataScrap(target: str, itemsType: str):
     TODAY_STRING = date.today().strftime("%Y-%m-%d")
     if itemsType == "":
         itemsType = "all"
-    prevData = {}
     cData = {}
     if target == 'yogyaonline':
         if itemsType == "all":
@@ -57,14 +56,7 @@ def dataScrap(target: str, itemsType: str):
             cData = {'data': indoCategories(), 'date': TODAY_STRING }
 
     if target == 'alfagift':
-        if itemsType == "all":
-            cData = [
-                {'data': alfaPromo(), 'date': TODAY_STRING , 'type': 'promo'},
-                {'data': alfaCatalog(), 'date': TODAY_STRING, 'type': 'catalog' }
-            ]
-        elif itemsType == "promo":
-            cData = {'data': alfaPromo(), 'date': TODAY_STRING }
-        elif itemsType == "catalog":
+        if itemsType == "catalog":
             cData = {'data': alfaCatalog(), 'date': TODAY_STRING }
 
     if not itemsType == "all":
@@ -140,7 +132,7 @@ if __name__ == "__main__":
     parser.add_argument('--scrap', 
         metavar ='all, promo, catalog', 
         type=str,
-        default='all',
+        default='catalog',
         choices=['all', 'promo', 'catalog'],
         help='choices the items type you want to get')
 

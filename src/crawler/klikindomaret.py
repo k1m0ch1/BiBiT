@@ -6,14 +6,11 @@ import shortuuid
 from bs4 import BeautifulSoup
 from inspect import currentframe, getframeinfo
 from tqdm import tqdm
-from tqdm.auto import trange
 from datetime import datetime
 
 from db import DBSTATE
 from util import cleanUpCurrency
 from discordhook import sendMessage
-from sqllex import SQLite3x, TEXT, NOT_NULL, INTEGER, PRIMARY_KEY, UNIQUE, FOREIGN_KEY, ALL
-from sqllex.constants import LIKE, ON, INNER_JOIN
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 TARGET_URL = "https://www.klikindomaret.com"
@@ -31,9 +28,6 @@ pageParam = {
 }
 
 db = DBSTATE
-
-# db.execute(script="CREATE UNIQUE INDEX idx_items_sku ON items(sku)")
-# db.execute(script="CREATE UNIQUE INDEX idx_items_name ON items(name)")
 
 
 def getDataCategories():
@@ -109,7 +103,6 @@ def getDataCategories():
                         }
                     }
 
-                    
                     now = datetime.now()
 
                     checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == item['id']) | (db['items']['name'] == item['name']))

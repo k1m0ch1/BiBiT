@@ -30,7 +30,7 @@ def lol():
 def stat():
     return {"message": "Misi bwang, API bikinan k1m0ch1 ama r17x"}
 
-@router.post("/sama")
+#@router.post("/sama")
 def sama(sama: Sama):
     now = datetime.now()
     db["item_item"].insert(
@@ -48,6 +48,7 @@ def search(search: Search):
     items = db.select(
         TABLE='items',
         SELECT=[
+            db['items']['id'],
             db['items']['name'],
             db['items']['link'],
             db['items']['source'],
@@ -69,39 +70,13 @@ def search(search: Search):
     result = []
     for item in items:
         dataModels = {
-            "name": item[0],
-            "link": item[1],
-            "source": item[2],
-            "image": item[3],
-            "prices": item[4]
+            "id": item[0],
+            "name": item[1],
+            "link": item[2],
+            "source": item[3],
+            "image": item[4],
+            "prices": item[5]
         }
-        if item[4] > 0:
+        if item[5] > 99:
             result.append(dataModels)
-    # items = db.executescript(
-    #     """
-    #     SELECT DISTINCT
-    #         items.name, 
-    #         items.link, 
-    #         items.source, 
-    #         items.image, 
-    #         prices.price, 
-    #         prices.created_at, 
-    #         discounts.discount_price, 
-    #         discounts.original_price, 
-    #         discounts.percentage
-    #     FROM
-    #         items
-    #         INNER JOIN
-    #         prices
-    #         ON 
-    #             items.id = prices.items_id
-    #         INNER JOIN
-    #         discounts
-    #         ON 
-    #             items.id = discounts.items_id
-    #     WHERE
-    #         items.name LIKE '%mimi%susu%'
-    #     """
-    # )
-    # print(items)
     return result

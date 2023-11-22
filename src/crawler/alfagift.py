@@ -4,7 +4,6 @@ import shortuuid
 from tqdm import tqdm
 from datetime import datetime
 from db import DBSTATE
-from sqllex.constants import LIKE, ON
 
 db = DBSTATE
 HOST = "https://webcommerce-gw.alfagift.id/v2"

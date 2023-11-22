@@ -18,7 +18,6 @@ tqdm = "*"
 sqllex = "*"
 shortuuid = "*"
 urllib3 = "<2"
-sqlalchemy = "*"
 
 [requires]
 python_version = "3.8"
