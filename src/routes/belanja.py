@@ -133,6 +133,7 @@ def getItemBelanja(belanja_id):
         SELECT=[
             db['items']['id'],
             db['items']['name'],
+            db['items']['source'],
             db['prices']['price'],
             db['belanja']['custom_price']
         ],
