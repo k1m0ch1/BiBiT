@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from typing import Union
 from datetime import date, timedelta
 from datetime import datetime
+import pytz
 
 db = DBAPI
 
@@ -25,7 +26,7 @@ class deleteLink(BaseModel):
 def newBelanjaLink():
     BELANJA_ID = shortuuid.uuid()
     SECRET_KEY = shortuuid.uuid()[:9]
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
     db["belanja_link"].insert(
         id=BELANJA_ID,
         status="CREATED",
@@ -40,7 +41,7 @@ def newBelanjaLink():
 # check item if already inserted
 @router.post("/belanja/{belanja_id}", status_code=200)
 def addItemBelanja(belanja_id, item: ItemBelanja):
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
     checkSecretBelanja = db.select(TABLE='belanja_link', SELECT='id', WHERE=(db['belanja_link']['secret_key'] == item.secret_key))
     if len(checkSecretBelanja) > 0:
         if belanja_id == checkSecretBelanja[0][0]:
@@ -60,7 +61,7 @@ def addItemBelanja(belanja_id, item: ItemBelanja):
 # check item if exist at belanja
 @router.delete("/belanja/{belanja_id}", status_code=200)
 def deleteItemPrice(belanja_id, item: ItemBelanja):
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
     checkSecretBelanja = db.select(TABLE='belanja_link', SELECT='id', WHERE=(db['belanja_link']['secret_key'] == item.secret_key))
     if len(checkSecretBelanja) > 0:
         if belanja_id == checkSecretBelanja[0][0]:
@@ -79,7 +80,7 @@ def deleteItemPrice(belanja_id, item: ItemBelanja):
 # check item if exist at belanja
 @router.delete("/belanja/{belanja_id}/delete", status_code=200)
 def deleteLink(belanja_id, key: deleteLink):
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
     checkSecretBelanja = db.select(TABLE='belanja_link', SELECT='id', WHERE=(db['belanja_link']['secret_key'] == key.secret_key))
     if len(checkSecretBelanja) > 0:
         if belanja_id == checkSecretBelanja[0][0]:
@@ -106,7 +107,7 @@ def deleteLink(belanja_id, key: deleteLink):
 # check item if exist at belanja
 @router.put("/belanja/{belanja_id}", status_code=200)
 def updateItemPrice(belanja_id, item: ItemBelanja):
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
     checkSecretBelanja = db.select(TABLE='belanja_link', SELECT='id', WHERE=(db['belanja_link']['secret_key'] == item.secret_key))
     if len(checkSecretBelanja) > 0:
         if belanja_id == checkSecretBelanja[0][0]:
@@ -125,7 +126,7 @@ def updateItemPrice(belanja_id, item: ItemBelanja):
 # cek kalo belanja link nya exist ga, kalo exist dan deleted jangan diliatin
 @router.get("/belanja/{belanja_id}")
 def getItemBelanja(belanja_id):
-    now = datetime.now()
+    now = datetime.now(pytz.timezone("Asia/Jakarta"))
     today = now.strftime("%Y-%m-%d")
     searchCondition =  (db['belanja']['deleted_at'] == "KOSONG") &(db['prices']['created_at'] |LIKE| f'{today}%')
     getItems = db.select(

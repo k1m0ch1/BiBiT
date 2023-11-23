@@ -4,6 +4,7 @@ import shortuuid
 from tqdm import tqdm
 from datetime import datetime
 from db import DBSTATE
+import pytz
 
 db = DBSTATE
 HOST = "https://webcommerce-gw.alfagift.id/v2"
@@ -58,7 +59,8 @@ def catalog():
         for item in tqdm(getAllItem.json()['products'], desc=f"get {categoryData['currentCategoryName']} items", leave=False):
             
             checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == item['sku']) | (db['items']['name'] == item['productName']))
-            now = datetime.now()
+            now = datetime.now(pytz.timezone("Asia/Jakarta"))
+
 
             if len(checkIdItem) > 0:
                 idItem = checkIdItem[0][0]

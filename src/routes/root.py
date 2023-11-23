@@ -32,14 +32,14 @@ def stat():
 
 #@router.post("/sama")
 def sama(sama: Sama):
-    now = datetime.now()
+    now = datetime.now(pytz.timezone("Asia/Jakarta"))
     db["item_item"].insert(
         shortuuid.uuid(), 
         sama.item_id, sama.with_item_id, "PROPOSED", now.strftime("%Y-%m-%d %H:%M:%S"), now.strftime("%Y-%m-%d %H:%M:%S"))
 
 @router.post("/search")
 def search(search: Search):
-    now = datetime.now()
+    now = datetime.now(pytz.timezone("Asia/Jakarta"))
     today = now.strftime("%Y-%m-%d")
     querySearch = f'%{search.query}%'
     searchCondition =  (db['items']['source'] != 'alfacart') & (db['items']['name'] |LIKE| querySearch) & (db['prices']['created_at'] |LIKE| f'{today}%')

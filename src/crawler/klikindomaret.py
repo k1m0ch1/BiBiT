@@ -11,6 +11,7 @@ from datetime import datetime
 from db import DBSTATE
 from util import cleanUpCurrency
 from discordhook import sendMessage
+import pytz
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 TARGET_URL = "https://www.klikindomaret.com"
@@ -103,7 +104,7 @@ def getDataCategories():
                         }
                     }
 
-                    now = datetime.now()
+                    now = datetime.now(pytz.timezone("Asia/Jakarta"))
 
                     checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == item['id']) | (db['items']['name'] == item['name']))
                     if len(checkIdItem) > 0:

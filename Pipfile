@@ -18,6 +18,7 @@ tqdm = "*"
 sqllex = "*"
 shortuuid = "*"
 urllib3 = "<2"
+pytz = "*"
 
 [requires]
 python_version = "3.8"

@@ -113,7 +113,8 @@ def runNotifier(target: str):
         api = tweepy.API(auth)
         
         try:
-            parent = api.update_status(f"{target.capitalize()} Price Today! {datetime.now().strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday")
+            import pytz
+            parent = api.update_status(f"{target.capitalize()} Price Today! {datetime.now(pytz.timezone('Asia/Jakarta')).strftime('%d-%m-%Y %H:%M:%S')} comparison with yesterday")
             parent_id = parent.id_str
             logging.info("Parent Message is created")
             twitter_message = twitter_message[0:400] if len(twitter_message) > 400 else twitter_message
