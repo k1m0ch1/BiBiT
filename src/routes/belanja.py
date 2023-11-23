@@ -41,7 +41,7 @@ def newBelanjaLink():
 # check item if already inserted
 @router.post("/belanja/{belanja_id}", status_code=200)
 def addItemBelanja(belanja_id, item: ItemBelanja):
-    now = pytz.timezone("Asia/Jakarta").strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
     checkSecretBelanja = db.select(TABLE='belanja_link', SELECT='id', WHERE=(db['belanja_link']['secret_key'] == item.secret_key))
     if len(checkSecretBelanja) > 0:
         if belanja_id == checkSecretBelanja[0][0]:
@@ -54,7 +54,7 @@ def addItemBelanja(belanja_id, item: ItemBelanja):
                 updated_at=now,
                 deleted_at="KOSONG"
             )
-            return {"message": "success add new item to belanja list"}
+            return {"message": "success add new item to belzanja list"}
     return {"message": "access denied"}
 
 # check item if exist in items
