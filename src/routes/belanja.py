@@ -41,7 +41,7 @@ def newBelanjaLink():
 # check item if already inserted
 @router.post("/belanja/{belanja_id}", status_code=200)
 def addItemBelanja(belanja_id, item: ItemBelanja):
-    now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
+    now = pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
     checkSecretBelanja = db.select(TABLE='belanja_link', SELECT='id', WHERE=(db['belanja_link']['secret_key'] == item.secret_key))
     if len(checkSecretBelanja) > 0:
         if belanja_id == checkSecretBelanja[0][0]:
