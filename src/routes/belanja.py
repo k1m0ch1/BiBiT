@@ -128,7 +128,7 @@ def updateItemPrice(belanja_id, item: ItemBelanja):
 def getItemBelanja(belanja_id):
     now = datetime.now(pytz.timezone("Asia/Jakarta"))
     today = now.strftime("%Y-%m-%d")
-    searchCondition =  (db['belanja']['deleted_at'] == "KOSONG") &(db['prices']['created_at'] |LIKE| f'{today}%')
+    searchCondition =  (db['belanja_link']['id'] == belanja_id) & (db['belanja']['deleted_at'] == "KOSONG") &(db['prices']['created_at'] |LIKE| f'{today}%')
     getItems = db.select(
         TABLE='belanja',
         SELECT=[
