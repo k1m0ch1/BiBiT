@@ -7,7 +7,7 @@ import os
 import argparse
 import sys
 
-from datetime import date, timedelta
+from datetime import date
 from notifier import sendNotification
 from crawler.yogyaonline import hotDeals as yogyaPromo, getCategories as yogyaCategories
 from crawler.klikindomaret import promosiMingguIni as indoPromo, getDataCategories as indoCategories

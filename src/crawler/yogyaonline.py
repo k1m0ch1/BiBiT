@@ -2,7 +2,6 @@ import requests
 import re
 import json
 import logging
-import sys
 from bs4 import BeautifulSoup
 from config import HEADERS
 from fp.fp import FreeProxy
@@ -16,21 +15,39 @@ from db import DBSTATE
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
 db = DBSTATE
+CATEGORIES = {}
 
 def scrap(URL, index):
     # understand the item limit, right now upto 640
     # is it possible to make the limit bigger like 9999
-    TARGET_URL = f"{URL}?p={index}&product_list_limit=640"
-    dataProduct = []
-    list_ids = []
-    # logging.info(f"Run the Scrapper {URL} page {index}")
-    req = requests.get(TARGET_URL)
+    item_limit = CATEGORIES[URL]['item_limit']
+    lanjut = True
+    req = requests.get("https://google.com")
+    while lanjut:
+        TARGET_URL = f"{URL}?p={index}&product_list_limit={item_limit}"
+        dataProduct = []
+        list_ids = []
+        # logging.info(f"Run the Scrapper {URL} page {index}")
+        req = requests.get(TARGET_URL)
+
+        if req.status_code == 503:
+            item_limit = item_limit / 2
+            lanjut = True
+            CATEGORIES[URL]['item_limit'] = int(item_limit)
+        elif req.status_code > 400:
+            print(f"ERROR BANG {req.status_code}, {req.text}")
+            return ""
+        elif req.status_code < 299:
+            lanjut = False
 
     parser = BeautifulSoup(req.text, 'html.parser')
 
-    productLink = [item['href'] for item in parser.find_all("ol", {"class": "products list items product-items"})[0].find_all("a", {"class": "product-item-link"}, href=True)]
+    e_ListItems = parser.find_all("ol", {"class": "products list items product-items"})
 
-    print(len(productLink))
+    productLink = []
+    if len(e_ListItems) > 0:
+        productLink = [item['href'] for item in e_ListItems[0].find_all("a", {"class": "product-item-link"}, href=True)]
+
     productImages = [item.get('data-original') for item in parser.find_all("img", {"class": "product-image-photo lazy"})]
     promotion = []
     
@@ -110,8 +127,6 @@ def getCategories():
     for cat in categoryClass:
         if cat.find('a').get('href') == "https://yogyaonline.co.id/blog-yogya-online":
             continue
-        if cat.find('a').get('href') == "https://yogyaonline.co.id/hotdeals.html":
-            continue
         if cat.find('a').get('href') == "#":
             continue
         if cat.find('a').get('href') not in categories:
@@ -120,19 +135,22 @@ def getCategories():
     compiledData = []
 
     for index, category in enumerate(categories):
-        logging.info(f"get {category} from {index+1}/{len(categories)}")
+        print(f"get {category} from {index+1}/{len(categories)}")
         prevData = {}
         index = 2
+        CATEGORIES[category] = {
+            "item_limit": 640
+        }
         currData = scrap(category, 1)
         compiledData += currData
         while not prevData == currData:
-            logging.info(f"Scrap {category} page {index} with current {len(compiledData)} items")
+            print(f"Scrap {category} page {index} with current {len(compiledData)} items")
             prevData = currData
             currData = scrap(category, index)
+            if currData == "":
+                continue
             index += 1
             compiledData += currData
-        
-        sys.exit()
 
     return compiledData
     
@@ -206,7 +224,6 @@ def hotDealsPage(page=1, limit=80):
 
 def hotDeals():
     prevData = {}
-    cData = {}
     compiledData = []
     index = 1
     currData = compiledData
