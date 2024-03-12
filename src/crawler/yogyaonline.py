@@ -1,11 +1,9 @@
 import requests
 import re
 import json
-import os
-import sys
 import logging
 from bs4 import BeautifulSoup
-from config import DATA_DIR, HEADERS
+from config import HEADERS
 from fp.fp import FreeProxy
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
