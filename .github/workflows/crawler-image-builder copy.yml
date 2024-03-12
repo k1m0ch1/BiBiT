@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      content: read
-      package: write
+      contents: read
+      packages: write
     
     steps:
       - name: Checkout repository
