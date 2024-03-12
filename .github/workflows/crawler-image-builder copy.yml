@@ -3,7 +3,7 @@ name: BiBiT Image Build and Publish Crawler
 on:
   push:
     tags:
-      - 'api\/v[0-9]+.[0-9]+.[0-9]+'
+      - 'crawler\/v[0-9]+.[0-9]+.[0-9]+'
 
 env:
   REGISTRY: ghcr.io
