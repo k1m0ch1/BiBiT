@@ -3,11 +3,12 @@ name: BiBiT Image Build and Publish Crawler
 on:
   push:
     tags:
-      - 'crawler\/v[0-9]+.[0-9]+.[0-9]+'
+      - 'api\/v[0-9]+.[0-9]+.[0-9]+'
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: k1m0ch1/bibit-crawler
+  IMAGE_NAME: k1m0ch1/bibit-api
+  DOCKERFILE: Dockerfile.API
 
 jobs:
   build-and-push-image:
@@ -34,11 +35,12 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: Build and push Docker image\
+      - name: Build and push Docker image
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: .
           push: true
+          dockerfile: ${{ env.DOCKERFILE }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
