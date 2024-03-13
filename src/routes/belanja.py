@@ -22,7 +22,7 @@ class deleteLink(BaseModel):
     secret_key: str
 
 # need to put some ratelimit in here
-@router.post("/belanja/new", status_code=201)
+# @router.post("/belanja/new", status_code=201)
 def newBelanjaLink():
     BELANJA_ID = shortuuid.uuid()
     SECRET_KEY = shortuuid.uuid()[:9]
@@ -39,7 +39,7 @@ def newBelanjaLink():
 
 # check item if exist
 # check item if already inserted
-@router.post("/belanja/{belanja_id}", status_code=200)
+# @router.post("/belanja/{belanja_id}", status_code=200)
 def addItemBelanja(belanja_id, item: ItemBelanja):
     now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
     checkSecretBelanja = db.select(TABLE='belanja_link', SELECT='id', WHERE=(db['belanja_link']['secret_key'] == item.secret_key))
@@ -59,7 +59,7 @@ def addItemBelanja(belanja_id, item: ItemBelanja):
 
 # check item if exist in items
 # check item if exist at belanja
-@router.delete("/belanja/{belanja_id}", status_code=200)
+# @router.delete("/belanja/{belanja_id}", status_code=200)
 def deleteItemPrice(belanja_id, item: ItemBelanja):
     now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
     checkSecretBelanja = db.select(TABLE='belanja_link', SELECT='id', WHERE=(db['belanja_link']['secret_key'] == item.secret_key))
@@ -78,7 +78,7 @@ def deleteItemPrice(belanja_id, item: ItemBelanja):
 
 # check item if exist in items
 # check item if exist at belanja
-@router.delete("/belanja/{belanja_id}/delete", status_code=200)
+# @router.delete("/belanja/{belanja_id}/delete", status_code=200)
 def deleteLink(belanja_id, key: deleteLink):
     now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
     checkSecretBelanja = db.select(TABLE='belanja_link', SELECT='id', WHERE=(db['belanja_link']['secret_key'] == key.secret_key))
@@ -105,7 +105,7 @@ def deleteLink(belanja_id, key: deleteLink):
 
 # check item if exist in items
 # check item if exist at belanja
-@router.put("/belanja/{belanja_id}", status_code=200)
+#@router.put("/belanja/{belanja_id}", status_code=200)
 def updateItemPrice(belanja_id, item: ItemBelanja):
     now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S")
     checkSecretBelanja = db.select(TABLE='belanja_link', SELECT='id', WHERE=(db['belanja_link']['secret_key'] == item.secret_key))
