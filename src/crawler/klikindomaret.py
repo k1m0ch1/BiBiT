@@ -1,16 +1,13 @@
 import requests
 import logging
 import re
-import sys
 import shortuuid
 from bs4 import BeautifulSoup
-from inspect import currentframe, getframeinfo
 from tqdm import tqdm
 from datetime import datetime
 
 from db import DBSTATE
 from util import cleanUpCurrency
-from discordhook import sendMessage
 import pytz
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
@@ -36,7 +33,6 @@ def getDataCategories():
     parser = BeautifulSoup(resp.text, 'html.parser')
     categoryClass = parser.find("div", {"class": "container-wrp-menu bg-white list-shadow list-category-mobile"})
     if categoryClass is None:
-        frameinfo = getframeinfo(currentframe())
         # sM = sendMessage("Scrapper klikindomaret ga berfungsi", f"Error di {frameinfo.filename} {frameinfo.lineno}", "I can't get the categories data on klikindomaret.com probably class `container-wrp-menu bg-white list-shadow list-category-mobile` is changed, go check klikindomaret.com on the categories list")
         return []
     
@@ -60,15 +56,14 @@ def getDataCategories():
     products = []
     product_Ids = []
 
-    for category in tqdm(categories, desc=f"Scrape Category"):
+    for category in tqdm(categories, desc="Scrape Category"):
         category_name = category.split("/")[2]
-        category_url = f"{TARGET_URL}{category}"
+        category_url = TARGET_URL+category
         getPage = requests.get(category_url)
         parser = BeautifulSoup(getPage.text, 'html.parser')
         if parser.find("select", {"id": "ddl-filtercategory-sort"}) is not None:
             getPageList = parser.find("select", {"class": "form-control pagelist"})
             if getPageList is None:
-                frameinfo = getframeinfo(currentframe())
                 logging.error("Scrapper klikindomaret ga berfungsi")
                 # sM = sendMessage("Scrapper klikindomaret ga berfungsi", f"Error di {frameinfo.filename} {frameinfo.lineno}", f"I can't get the PageList from {TARGET_URL}{category}, probably have no data, but please check it first")
                 continue
@@ -141,9 +136,6 @@ def promosiMingguIni():
                 return getLink.find('a').get('href')
 
     promosiLink = findPromosiLink()
-
-    import pdb; pdb.set_trace()
-
     # need to validate if the link is valid
 
     getPage = requests.get(f"{promosiLink}")

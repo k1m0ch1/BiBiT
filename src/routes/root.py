@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from db import DBAPI
 import sqllex as sx
 from sqllex.constants import  ON, LIKE
 import shortuuid
 from pydantic import BaseModel
 from typing import Union
-from datetime import date, timedelta
 from datetime import datetime
 import pytz
 

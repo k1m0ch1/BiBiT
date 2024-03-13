@@ -1,6 +1,3 @@
-import ast
-
-from datetime import date, timedelta
 from os import environ
 
 _ = environ.get
@@ -24,5 +21,3 @@ HEADERS = {
 
 DISCORD_NOTIFICATION=True if DISCORD_NOTIFICATION=="True" or DISCORD_NOTIFICATION=="true" else DISCORD_NOTIFICATION
 TWITTER_NOTIFICATION=True if TWITTER_NOTIFICATION=="True" or TWITTER_NOTIFICATION=="true" else TWITTER_NOTIFICATION
-PRIME_TIME = ast.literal_eval(PRIME_TIME) if type(PRIME_TIME) == str else PRIME_TIME
-SCRAPPING_TIME = ast.literal_eval(SCRAPPING_TIME) if type(SCRAPPING_TIME) == str else SCRAPPING_TIME

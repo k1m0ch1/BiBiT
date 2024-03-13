@@ -12,10 +12,10 @@ router = APIRouter()
 async def catalog(start: Optional[int] = 0, end: Optional[int] = 50, date: Optional[str] = date.today().strftime("%Y-%m-%d")):
     FILENAME = f"{DATA_DIR}/yogyaonline/catalog/{date}.json"
     if not os.path.exists(FILENAME):
-        return {"message": f"the data on this date is not exist"}
+        return {"message": "the data on this date is not exist"}
     TARGETDB = json.loads(open(FILENAME, 'r').read())['data']
     return {
-        "message": f"Success fetch data",
+        "message": "Success fetch data",
         "data": TARGETDB[start:end]
     }
 
@@ -25,6 +25,6 @@ async def availabilityCatalog():
 
     files = next(os.walk(DIRPATH), (None, None, []))[2]
     return {
-        "message": f"Success fetch data",
+        "message": "Success fetch data",
         "data": files
     }

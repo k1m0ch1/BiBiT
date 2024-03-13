@@ -1,5 +1,3 @@
-
-from datetime import datetime
 from sqllex import SQLite3x, TEXT, INTEGER, PRIMARY_KEY, UNIQUE, FOREIGN_KEY
 
 TEMPLATE_DB = {

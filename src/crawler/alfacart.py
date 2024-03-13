@@ -1,14 +1,10 @@
 import requests
-import json
-import os
 import logging
-import sys
 import shortuuid
 
 from datetime import datetime
 from tqdm import tqdm
 from bs4 import BeautifulSoup
-from datetime import date, timedelta
 from math import ceil
 from util import randomWait
 from db import DBSTATE
@@ -85,7 +81,6 @@ def promotion():
         # logging.info(code)
         BODY['qtext'] = code
         req = requests.post(TARGET_URL, json=BODY, headers=HEADERS, verify=False)
-        data_raw = req.json()
         if "result" in req.json():
             data = req.json()["result"]["result_products"]
             # logging.info(f'{req.json()["result"]["result_count"]} and actual {len(data)}')
@@ -121,8 +116,6 @@ def promotion():
 
 
 def catalog():
-    TODAY_STRING = date.today().strftime("%Y-%m-%d")
-    YESTERDAY_STRING = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
     TARGET_URL = "https://mapigo.alfacart.com/v5/list/catalog"
     CATALOG_URL = "https://mapigo.alfacart.com/v5/home/categories"
     HEADERS = {
