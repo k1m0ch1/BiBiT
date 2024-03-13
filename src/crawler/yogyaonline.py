@@ -13,7 +13,7 @@ from util import cleanUpCurrency
 from db import DBSTATE
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
-
+logging.info("loading the yogyaonline scrapper")
 db = DBSTATE
 CATEGORIES = {}
 
@@ -121,6 +121,7 @@ def scrap(URL, index):
 def getCategories():
     TARGET_URL = "https://www.yogyaonline.co.id/"
     resp = requests.get(TARGET_URL)
+    logging.info(f"{resp.status_code} for {TARGET_URL}")
     parser = BeautifulSoup(resp.text, 'html.parser')
     categoryClass = parser.find_all("li", {"id": re.compile('vesitem-*')})
     categories = []
@@ -135,7 +136,7 @@ def getCategories():
     compiledData = []
 
     for index, category in enumerate(categories):
-        print(f"get {category} from {index+1}/{len(categories)}")
+        logging.info(f"get {category} from {index+1}/{len(categories)}")
         prevData = {}
         index = 2
         CATEGORIES[category] = {
@@ -144,7 +145,7 @@ def getCategories():
         currData = scrap(category, 1)
         compiledData += currData
         while not prevData == currData:
-            print(f"Scrap {category} page {index} with current {len(compiledData)} items")
+            logging.info(f"Scrap {category} page {index} with current {len(compiledData)} items")
             prevData = currData
             currData = scrap(category, index)
             if currData == "":
