@@ -108,12 +108,12 @@ def scrap(URL, index):
             # harus di cek lagi, hari ini datanya sama atau tidak
             # kalau hari ini datanya sama, ga usah simpen data harga sama diskon
             db["prices"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(dataProduct[key]['price']), "", now.strftime("%Y-%m-%d %H:%M:%S"))
-            db["discounts"].insert(shortuuid.uuid(), idItem, dataProduct[key]['price'], cleanUpCurrency(dataProduct[key]['promotion']['original_price']), dataProduct[key]['promotion']['description'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
+            db["discounts"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(dataProduct[key]['price']), cleanUpCurrency(dataProduct[key]['promotion']['original_price']), dataProduct[key]['promotion']['description'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
         else:
             idItem = shortuuid.uuid()
             db["items"].insert(idItem, dataProduct[key]['item_id'], dataProduct[key]['item_name'], dataProduct[key]['item_list_name'], dataProduct[key]['image'], dataProduct[key]['link'], 'yogyaonline', now.strftime("%Y-%m-%d %H:%M:%S"))
             db["prices"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(dataProduct[key]['price']), "", now.strftime("%Y-%m-%d %H:%M:%S"))
-            db["discounts"].insert(shortuuid.uuid(), idItem, dataProduct[key]['price'], cleanUpCurrency(dataProduct[key]['promotion']['original_price']), dataProduct[key]['promotion']['description'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
+            db["discounts"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(dataProduct[key]['price']), cleanUpCurrency(dataProduct[key]['promotion']['original_price']), dataProduct[key]['promotion']['description'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
 
     return dataProduct
 
