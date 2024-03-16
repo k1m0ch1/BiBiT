@@ -2,8 +2,6 @@ import schedule
 import time
 import logging
 import config
-import json
-import os
 import argparse
 import sys
 
@@ -12,7 +10,6 @@ from notifier import sendNotification
 from crawler.yogyaonline import hotDeals as yogyaPromo, getCategories as yogyaCategories
 from crawler.klikindomaret import promosiMingguIni as indoPromo, getDataCategories as indoCategories
 from crawler.alfagift import catalog as alfaCatalog
-from config import DATA_DIR
 
 import uvicorn
 
@@ -68,22 +65,6 @@ def jobScrapper(target: str = 'all', itemsType: str = 'all'):
             logging.error("Fail Scrapping")
 
 if __name__ == "__main__":
-    REQUIREMENT_DIR = [
-        f"{DATA_DIR}",
-        f"{DATA_DIR}/alfagift",
-        f"{DATA_DIR}/alfagift/catalog",
-        f"{DATA_DIR}/alfagift/promo",
-        f"{DATA_DIR}/klikindomaret",
-        f"{DATA_DIR}/klikindomaret/promo",
-        f"{DATA_DIR}/klikindomaret/catalog",
-        f"{DATA_DIR}/yogyaonline",
-        f"{DATA_DIR}/yogyaonline/promo",
-        f"{DATA_DIR}/yogyaonline/catalog"
-    ]
-
-    for dirr in REQUIREMENT_DIR:
-        if not os.path.isdir(dirr):
-            os.mkdir(dirr)
 
     parser = argparse.ArgumentParser(description='Process the BiBiT Job')
     parser.add_argument('command', 
