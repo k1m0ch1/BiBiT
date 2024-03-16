@@ -82,7 +82,18 @@ def getDataCategories():
                     container = item.find('div', {'class': 'wrp-content'})
                     dikirimOleh = container.find('span', {'class': 'sendbyProduct'}).find('span').get('class')
                     dikirimOleh = container.find('span', {'class': 'sendbyProduct'}).find('span', {'class': dikirimOleh})
-                    productOldPrice = 0 if container.find('span', {'class': 'strikeout disc-price'}) is None else cleanUpCurrency(container.find('span', {'class': 'strikeout disc-price'}).text.split("\n")[2])
+                    if container.find('span', {'class': 'strikeout disc-price'}) is None:
+                        productOldPrice = 0
+                    else:
+                        mantap = container.find('span', {'class': 'strikeout disc-price'}).text.split("\n")
+                        if len(mantap)>2:
+                            productOldPrice = mantap[2]
+                        else:
+                            print(f"{mantap} - DUDE INI ANEH SIH")
+                            productOldPrice = 0
+                        
+
+                    # productOldPrice = 0 if container.find('span', {'class': 'strikeout disc-price'}) is None else cleanUpCurrency(container.find('span', {'class': 'strikeout disc-price'}).text.split("\n")[2])
                     productPromotion = 0 if container.find('span', {'class': 'discount'}) is None else container.find('span', {'class': 'discount'}).get_text().replace("\n", "").replace(" ", "")
                     productPrice = container.find('span', {'class': 'normal price-value'}).get_text()
 
