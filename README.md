@@ -6,7 +6,7 @@
 
 ## Introduction
 
-BiBiT or sprout in english, the main purpose of this bot is to send the notification when the groceries price in `yogyaonline.co.id` `alfacart.com` and `klikindomaret.com` is changed within expensive or chepaer, the main feature of this bot is to scrap wether is `all item` or `only promotion` items in the website.
+BiBiT or sprout in english, the main purpose of this bot is to send the notification when the groceries price in `yogyaonline.co.id` `alfacart.com` and `klikindomaret.com` is changed within expensive or cheaper, the main feature of this bot is to scrap wether is `all item` or `only promotion` items in the website.
 
 ## How the bot work ?
 
