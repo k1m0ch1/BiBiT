@@ -34,52 +34,23 @@ def dataScrap(target: str, itemsType: str):
     cData = {}
     if target == 'yogyaonline':
         if itemsType == "all":
-            cData = [
-                {'data': yogyaCategories(), 'date': TODAY_STRING, 'type': 'catalog' },
-                {'data': yogyaPromo(), 'date': TODAY_STRING, 'type': 'promo'}
-            ]
+            yogyaCategories()
         elif itemsType == 'promo':
-            cData = {'data': yogyaPromo(), 'date': TODAY_STRING }
+            yogyaPromo()
         elif itemsType == 'catalog':
-            cData = {'data': yogyaCategories(), 'date': TODAY_STRING }
+            yogyaCategories()
     
     if target == 'klikindomaret':
         if itemsType == "all":
-            cData = [
-                {'data': indoPromo(), 'date': TODAY_STRING, 'type': 'promo' },
-                {'data': indoCategories(), 'date': TODAY_STRING, 'type': 'catalog' }
-            ]
+            indoCategories()
         elif itemsType == "promo":
-            cData = {'data': indoPromo(), 'date': TODAY_STRING }
+            indoPromo()
         elif itemsType == "catalog":
-            cData = {'data': indoCategories(), 'date': TODAY_STRING }
+            indoCategories()
 
     if target == 'alfagift':
         if itemsType == "catalog":
-            cData = {'data': alfaCatalog(), 'date': TODAY_STRING }
-
-    if not itemsType == "all":
-
-        file_object = open(f'{DATA_DIR}/{target}/{itemsType}/{TODAY_STRING}.json', 'w+')
-        file_object.write(json.dumps(cData))
-
-        # Backup for notifier, remove this after notifier is fixed
-        if target == "yogyaonline":
-            file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
-            file_object.write(json.dumps(cData))
-
-        logging.info(f"== scrapping {target} success, saved to {DATA_DIR}/{target}/{itemsType}/{TODAY_STRING}.json")
-        
-    else:
-        for itemData in cData:
-            file_object = open(f'{DATA_DIR}/{target}/{itemData["type"]}/{TODAY_STRING}.json', 'w+')
-            file_object.write(json.dumps(itemData))
-
-            logging.info(f"== scrapping {target} success, saved to {DATA_DIR}/{target}/{itemData['type']}/{TODAY_STRING}.json")
-        if target == "yogyaonline":
-            # Backup for notifier, remove this after notifier is fixed
-            file_object = open(f'{DATA_DIR}/{TODAY_STRING}.json', 'w+')
-            file_object.write(json.dumps(cData))
+            alfaCatalog()
 
     return True
 
