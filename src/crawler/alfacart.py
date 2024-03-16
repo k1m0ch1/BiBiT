@@ -11,6 +11,15 @@ from db import DBSTATE
 
 db = DBSTATE
 
+# ================================
+#
+# THIS CRALWER IS DEPRECATED
+# AND MOVE TO ALFAGIFT
+# BECAUSE ALFACART IS FAIL PRODUCT
+# FROM ALFAMART
+#
+# ================================
+
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
 def retry(reqa):

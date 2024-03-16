@@ -61,7 +61,6 @@ def catalog():
             checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == item['sku']) | (db['items']['name'] == item['productName']))
             now = datetime.now(pytz.timezone("Asia/Jakarta"))
 
-
             if len(checkIdItem) > 0:
                 idItem = checkIdItem[0][0]
                 db["prices"].insert(shortuuid.uuid(), idItem, item['finalPrice'], "", now.strftime("%Y-%m-%d %H:%M:%S"))

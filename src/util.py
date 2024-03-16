@@ -11,5 +11,8 @@ def randomWait(min, max):
     time.sleep(wait)
 
 def cleanUpCurrency(price: str) -> int:
-    ggwp = price.replace(" ", "").replace("Rp", "").replace(".00","").replace(".","").replace("\n","")
+    ggwp = price.replace(" ", "").replace("Rp", "").replace(".000","000")
+    if ggwp[-3:] == ".00":
+        ggwp = ggwp[:-3]
+    ggwp = ggwp.replace(".","").replace("\n","")
     return int(ggwp)
