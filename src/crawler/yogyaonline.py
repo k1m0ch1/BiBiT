@@ -17,14 +17,10 @@ logging.info("loading the yogyaonline scrapper")
 db = DBSTATE
 CATEGORIES = {}
 
-newItems = 0
-newPrices = 0
-newDiscounts = 0
-
-def scrap(URL, index):
-    newItems = newItems
-    newPrices = newPrices
-    newDiscounts = newDiscounts
+def scrap(URL, index, counter):
+    newItems = counter['newItems']
+    newPrices = counter['newPrices']
+    newDiscounts = counter['newDiscounts']
     # understand the item limit, right now upto 640
     # is it possible to make the limit bigger like 9999
     item_limit = CATEGORIES[URL]['item_limit']
@@ -171,6 +167,12 @@ def getCategories():
             categories.append(cat.find('a').get('href'))
     
     compiledData = []
+    counter = {
+        "newItems" : 0,
+        "newPrices" : 0,
+        "newDiscounts" : 0
+    }
+    
 
     for index, category in enumerate(categories):
         logging.info(f"get {category} from {index+1}/{len(categories)}")
@@ -179,19 +181,19 @@ def getCategories():
         CATEGORIES[category] = {
             "item_limit": 640
         }
-        currData = scrap(category, 1)
+        currData = scrap(category, 1,counter)
         compiledData += currData
         while not prevData == currData:
             # logging.info(f"Scrap {category} page {index} with current {len(compiledData)} items")
             prevData = currData
-            currData = scrap(category, index)
+            currData = scrap(category, index,counter)
             if currData == "":
                 continue
             index += 1
             compiledData += currData
 
-    logging.info(f"=== Finish scrap {len(compiledData)} item by added {newItems} items, {newPrices} prices, {newDiscounts} discounts")
-    if newItems ==0 & newPrices==0 & newDiscounts==0:
+    logging.info(f"=== Finish scrap {len(compiledData)} item by added {counter['newItems']} items, {counter['newPrices']} prices, {counter['newDiscounts']} discounts")
+    if counter['newItems'] ==0 & counter['newPrices']==0 & counter['newDiscounts']==0:
         logging.info("=== i guess nothing different today")
 
     return compiledData
