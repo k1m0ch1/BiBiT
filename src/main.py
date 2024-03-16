@@ -5,10 +5,8 @@ import config
 import argparse
 import sys
 
-from datetime import date
-from notifier import sendNotification
-from crawler.yogyaonline import hotDeals as yogyaPromo, getCategories as yogyaCategories
-from crawler.klikindomaret import promosiMingguIni as indoPromo, getDataCategories as indoCategories
+from crawler.yogyaonline import getCategories as yogyaCategories
+from crawler.klikindomaret import getDataCategories as indoCategories
 from crawler.alfagift import catalog as alfaCatalog
 
 import uvicorn
@@ -24,35 +22,21 @@ app.include_router(belanja.router)
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
-def dataScrap(target: str, itemsType: str):
-    TODAY_STRING = date.today().strftime("%Y-%m-%d")
-    if itemsType == "":
-        itemsType = "all"
-    cData = {}
+def dataScrap(target: str):
+
     if target == 'yogyaonline':
-        if itemsType == "all":
-            yogyaCategories()
-        elif itemsType == 'promo':
-            yogyaPromo()
-        elif itemsType == 'catalog':
-            yogyaCategories()
+        yogyaCategories()
     
     if target == 'klikindomaret':
-        if itemsType == "all":
-            indoCategories()
-        elif itemsType == "promo":
-            indoPromo()
-        elif itemsType == "catalog":
-            indoCategories()
+        indoCategories()
 
     if target == 'alfagift':
-        if itemsType == "catalog":
-            alfaCatalog()
+        alfaCatalog()
 
     return True
 
-def jobScrapper(target: str = 'all', itemsType: str = 'all'):
-    logging.info(f"=== worker target to {target} with scraping mode {itemsType} is running")
+def jobScrapper(target: str = 'all'):
+    logging.info(f"=== worker target to {target} is running")
 
     if target == 'all':
         for itemTarget in ['yogyaonline', 'alfagift', 'klikindomaret']:
@@ -60,7 +44,7 @@ def jobScrapper(target: str = 'all', itemsType: str = 'all'):
             if not job:
                 logging.error("Fail Scrapping")
     else:
-        job = dataScrap(target, itemsType)
+        job = dataScrap(target)
         if not job:
             logging.error("Fail Scrapping")
 
@@ -70,7 +54,7 @@ if __name__ == "__main__":
     parser.add_argument('command', 
         metavar ='command', 
         type=str, 
-        choices=['notif', 'scrap', 'do.notif', 'do.scrap', 'web.api'],
+        choices=['do.scrap', 'web.api'],
         help='a command to run the bibit Job, the choices is `notif`, `scrap`, `do.notif` and `do.scrap` ')
     
     parser.add_argument('--target', 
@@ -80,33 +64,17 @@ if __name__ == "__main__":
         choices=['all', 'yogyaonline', 'klikindomaret', 'alfagift'],
         help='choices the target to be scrapped')
 
-    parser.add_argument('--scrap', 
-        metavar ='all, promo, catalog', 
-        type=str,
-        default='catalog',
-        choices=['all', 'promo', 'catalog'],
-        help='choices the items type you want to get')
-
     args = parser.parse_args()
     
-    logging.info(f"=== The scrapper for {args.target} in page {args.scrap} will be running for")
-
-    if args.command == 'notif':
-        for PRIME_TIME in config.PRIME_TIME:
-            logging.info(f"=== notification worker at {PRIME_TIME} is queued")
-            schedule.every().day.at(PRIME_TIME).do(sendNotification)
+    logging.info(f"=== The scrapper for {args.target} is running")
 
     if args.command == 'scrap':
         for SCRAPPING_TIME in config.SCRAPPING_TIME:
             logging.info(f"=== scrapper worker at {SCRAPPING_TIME} is queued")
-            schedule.every().day.at(SCRAPPING_TIME).do(jobScrapper, target=args.target, itemsType=args.scrap)
-
-    if args.command == 'do.notif':
-        sendNotification()
-        sys.exit(1)
+            schedule.every().day.at(SCRAPPING_TIME).do(jobScrapper, target=args.target)
 
     if args.command == 'do.scrap':
-        jobScrapper(args.target, args.scrap)
+        jobScrapper(args.target)
         sys.exit(1)
 
     if args.command == 'web.api':
