@@ -16,12 +16,15 @@ logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:
 logging.info("loading the yogyaonline scrapper")
 db = DBSTATE
 CATEGORIES = {}
+
 newItems = 0
-totalItem = 0
 newPrices = 0
 newDiscounts = 0
 
 def scrap(URL, index):
+    newItems = newItems
+    newPrices = newPrices
+    newDiscounts = newDiscounts
     # understand the item limit, right now upto 640
     # is it possible to make the limit bigger like 9999
     item_limit = CATEGORIES[URL]['item_limit']
