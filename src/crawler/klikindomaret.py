@@ -5,6 +5,7 @@ import shortuuid
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 from datetime import datetime
+from sqllex import LIKE
 
 from db import DBSTATE
 from util import cleanUpCurrency
@@ -29,6 +30,10 @@ db = DBSTATE
 
 
 def getDataCategories():
+    newItems = 0
+    totalItem = 0
+    newPrices = 0
+    newDiscounts = 0
     resp = requests.get(TARGET_URL)
     parser = BeautifulSoup(resp.text, 'html.parser')
     categoryClass = parser.find("div", {"class": "container-wrp-menu bg-white list-shadow list-category-mobile"})
@@ -109,18 +114,44 @@ def getDataCategories():
                             "original_price": productOldPrice
                         }
                     }
+                    totalItem += 1
+
 
                     now = datetime.now(pytz.timezone("Asia/Jakarta"))
+                    date_today = now.strftime("%Y-%m-%d")
+                    datetime_today = now.strftime("%Y-%m-%d %H:%M:%S")
 
                     checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == item['id']) | (db['items']['name'] == item['name']))
-                    if len(checkIdItem) > 0:
-                        idItem = checkIdItem[0][0]
-                        db["prices"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(productPrice), "", now.strftime("%Y-%m-%d %H:%M:%S"))
-                        db["discounts"].insert(shortuuid.uuid(), idItem, item['price'], productOldPrice, productPromotion, "", now.strftime("%Y-%m-%d %H:%M:%S"))
+                    idItem = shortuuid.uuid()
+
+                    if len(checkIdItem) == 0:
+                        db["items"].insert(idItem, item['id'], item['name'], 
+                                           item['sub_category'], item['image'], item['link'], 
+                                           'klikindomaret', datetime_today)
+                        newItems += 1
                     else:
-                        idItem = shortuuid.uuid()
-                        db["items"].insert(idItem, item['id'], item['name'], item['sub_category'], item['image'], item['link'], 'klikindomaret', now.strftime("%Y-%m-%d %H:%M:%S"))
+                        idItem = checkIdItem[0][0]
+
+                    checkItemIdinPrice = db.select(TABLE='prices', SELECT='id', 
+                        WHERE=(db['prices']['items_id'] == idItem) & 
+                            (db['prices']['created_at'] | LIKE | f'{date_today}%') & 
+                            (db['prices']['price'] == item['price'])
+                    )
                     
+                    if len(checkItemIdinPrice) == 0:
+                        db["prices"].insert(shortuuid.uuid(), idItem, item['price'], "", datetime_today)
+                        newPrices += 1
+
+                    checkItemIdinDiscount = db.select(TABLE='discounts', SELECT='id', 
+                        WHERE=(db['discounts']['items_id'] == idItem) &
+                            (db['discounts']['created_at'] | LIKE | f'{date_today}%') &
+                            (db['discounts']['discount_price'] == item['price']) &
+                            (db['discounts']['original_price'] == productOldPrice)
+                    )
+
+                    if len(checkItemIdinDiscount) == 0:
+                        db["discounts"].insert(shortuuid.uuid(), idItem, item['price'], productOldPrice, productPromotion, "", datetime_today)
+                        newDiscounts += 1
                     
                     if productID not in product_Ids:
                         product_Ids.append(productID)
@@ -129,4 +160,7 @@ def getDataCategories():
                     else:
                         # logging.info(f"Product {productName} is already exist, skip this item")
                         continue
+    logging.info(f"=== Finish scrap {totalItem} item by added {newItems} items, {newPrices} prices, {newDiscounts} discounts")
+    if newItems ==0 & newPrices==0 & newDiscounts==0:
+        logging.info("=== i guess nothing different today")
     return products

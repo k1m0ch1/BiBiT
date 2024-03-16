@@ -43,6 +43,10 @@ def catalog():
         "start": 0,
         "limit": 0
     }
+    newItems = 0
+    totalItem = 0
+    newPrices = 0
+    newDiscounts = 0
     for category in tqdm(categories, desc="get Categories"):
         PARAMS['limit'] = 1
         getTotalData = requests.get(f"{HOST}/products/category/{category}", params=PARAMS, headers=HEADERS)
@@ -59,6 +63,7 @@ def catalog():
         if getAllItem.status_code >= 400:
             print("ERROR getAllItem")
             sys.exit()
+        totalItem += len(getAllItem.json()['products'])
 
         for item in tqdm(getAllItem.json()['products'], desc=f"get {categoryData['currentCategoryName']} items", leave=False):
             
@@ -67,10 +72,12 @@ def catalog():
             date_today = now.strftime("%Y-%m-%d")
             datetime_today = now.strftime("%Y-%m-%d %H:%M:%S")
             idItem = item['productId']
-
+            
             if len(checkIdItem) == 0:
                 db["items"].insert(item['productId'], 
                                    item['sku'], item['productName'], categoryData['currentCategoryName'], item['image'], f"https://alfagift.id/p/{item['productId']}", 'alfagift', datetime_today)
+                newItems += 1
+
             else:
                 idItem = checkIdItem[0][0]
 
@@ -81,6 +88,7 @@ def catalog():
                                            (db['prices']['price'] == item['finalPrice']))
             if len(checkItemIdinPrice) == 0:
                     db["prices"].insert(shortuuid.uuid(), idItem, item['finalPrice'], "", datetime_today)
+                    newPrices += 1
 
             checkItemIdinDiscount = db.select(TABLE='discounts', 
                                               SELECT='id', 
@@ -91,8 +99,11 @@ def catalog():
                                              )
             if len(checkItemIdinDiscount) == 0:
                 db["discounts"].insert(shortuuid.uuid(), idItem, item['finalPrice'], item['basePrice'], item['discountPercent'], "", datetime_today)                
+                newDiscounts += 1
 
-    logging.info(f"=== Finish")
+    logging.info(f"=== Finish scrap {totalItem} item by added {newItems} items, {newPrices} prices, {newDiscounts} discounts")
+    if newItems ==0 & newPrices==0 & newDiscounts==0:
+        logging.info("=== i guess nothing different today")
 
 
         

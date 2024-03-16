@@ -8,6 +8,7 @@ from datetime import datetime
 import pytz
 import shortuuid
 from util import cleanUpCurrency
+from sqllex import LIKE
 
 from db import DBSTATE
 
@@ -15,6 +16,10 @@ logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:
 logging.info("loading the yogyaonline scrapper")
 db = DBSTATE
 CATEGORIES = {}
+newItems = 0
+totalItem = 0
+newPrices = 0
+newDiscounts = 0
 
 def scrap(URL, index):
     # understand the item limit, right now upto 640
@@ -101,18 +106,48 @@ def scrap(URL, index):
         dataProduct[key]['promotion'] = promotion[key]
         dataProduct[key]['image'] = productImages[key]
         now = datetime.now(pytz.timezone("Asia/Jakarta"))
+
+        date_today = now.strftime("%Y-%m-%d")
+        datetime_today = now.strftime("%Y-%m-%d %H:%M:%S")
+
         checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == dataProduct[key]['item_id']) | (db['items']['name'] == dataProduct[key]['item_name']))
-        if len(checkIdItem) > 0:
-            idItem = checkIdItem[0][0]
-            # harus di cek lagi, hari ini datanya sama atau tidak
-            # kalau hari ini datanya sama, ga usah simpen data harga sama diskon
-            db["prices"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(dataProduct[key]['price']), "", now.strftime("%Y-%m-%d %H:%M:%S"))
-            db["discounts"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(dataProduct[key]['price']), cleanUpCurrency(dataProduct[key]['promotion']['original_price']), dataProduct[key]['promotion']['description'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
+        idItem = shortuuid.uuid()
+
+        if len(checkIdItem) == 0:
+            db["items"].insert(idItem, dataProduct[key]['item_id'], 
+                               dataProduct[key]['item_name'], dataProduct[key]['item_list_name'], 
+                               dataProduct[key]['image'], dataProduct[key]['link'], 'yogyaonline', 
+                               datetime_today)
+            newItems += 1
         else:
-            idItem = shortuuid.uuid()
-            db["items"].insert(idItem, dataProduct[key]['item_id'], dataProduct[key]['item_name'], dataProduct[key]['item_list_name'], dataProduct[key]['image'], dataProduct[key]['link'], 'yogyaonline', now.strftime("%Y-%m-%d %H:%M:%S"))
-            db["prices"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(dataProduct[key]['price']), "", now.strftime("%Y-%m-%d %H:%M:%S"))
-            db["discounts"].insert(shortuuid.uuid(), idItem, cleanUpCurrency(dataProduct[key]['price']), cleanUpCurrency(dataProduct[key]['promotion']['original_price']), dataProduct[key]['promotion']['description'], "", now.strftime("%Y-%m-%d %H:%M:%S"))
+            idItem = checkIdItem[0][0]
+
+        checkItemIdinPrice = db.select(TABLE='prices', SELECT='id', 
+            WHERE=(db['prices']['items_id'] == idItem) & 
+                (db['prices']['created_at'] | LIKE | f'{date_today}%') & 
+                (db['prices']['price'] == cleanUpCurrency(dataProduct[key]['price']))
+        )
+        
+        if len(checkItemIdinPrice) == 0:
+            db["prices"].insert(shortuuid.uuid(), idItem, 
+                                cleanUpCurrency(dataProduct[key]['price']), "", 
+                                datetime_today)
+            newPrices += 1
+        
+        checkItemIdinDiscount = db.select(TABLE='discounts', SELECT='id', 
+            WHERE=(db['discounts']['items_id'] == idItem) &
+                (db['discounts']['created_at'] | LIKE | f'{date_today}%') &
+                (db['discounts']['discount_price'] == cleanUpCurrency(dataProduct[key]['price'])) &
+                (db['discounts']['original_price'] == cleanUpCurrency(dataProduct[key]['promotion']['original_price']))
+        )
+
+        if len(checkItemIdinDiscount) == 0:
+            db["discounts"].insert(shortuuid.uuid(), idItem, 
+                                   cleanUpCurrency(dataProduct[key]['price']), 
+                                   cleanUpCurrency(dataProduct[key]['promotion']['original_price']), 
+                                   dataProduct[key]['promotion']['description'], "", 
+                                   datetime_today)
+            newDiscounts += 1
 
     return dataProduct
 
@@ -144,13 +179,17 @@ def getCategories():
         currData = scrap(category, 1)
         compiledData += currData
         while not prevData == currData:
-            logging.info(f"Scrap {category} page {index} with current {len(compiledData)} items")
+            # logging.info(f"Scrap {category} page {index} with current {len(compiledData)} items")
             prevData = currData
             currData = scrap(category, index)
             if currData == "":
                 continue
             index += 1
             compiledData += currData
+
+    logging.info(f"=== Finish scrap {len(compiledData)} item by added {newItems} items, {newPrices} prices, {newDiscounts} discounts")
+    if newItems ==0 & newPrices==0 & newDiscounts==0:
+        logging.info("=== i guess nothing different today")
 
     return compiledData
 
