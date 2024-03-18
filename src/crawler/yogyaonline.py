@@ -109,7 +109,11 @@ def scrap(URL, index, counter):
         date_today = now.strftime("%Y-%m-%d")
         datetime_today = now.strftime("%Y-%m-%d %H:%M:%S")
 
-        checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == dataProduct[key]['item_id']) | (db['items']['name'] == dataProduct[key]['item_name']))
+        reqQuery = {
+            'script': "SELECT id FROM items WHERE sku=? OR name=?",
+            'values': (dataProduct[key]['item_id'], dataProduct[key]['item_name'])
+        }
+        checkIdItem = db.execute(**reqQuery)
         idItem = shortuuid.uuid()
 
         if len(checkIdItem) == 0:
@@ -121,24 +125,24 @@ def scrap(URL, index, counter):
         else:
             idItem = checkIdItem[0][0]
 
-        checkItemIdinPrice = db.select(TABLE='prices', SELECT='id', 
-            WHERE=(db['prices']['items_id'] == idItem) & 
-                (db['prices']['created_at'] | LIKE | f'{date_today}%') & 
-                (db['prices']['price'] == cleanUpCurrency(dataProduct[key]['price']))
-        )
+
+        reqQuery = {
+            'script': "SELECT id FROM prices WHERE items_id=? AND created_at LIKE ? AND price=?",
+            'values': (idItem, f'{date_today}%', cleanUpCurrency(dataProduct[key]['price']))
+        }
+        checkItemIdinPrice = db.execute(**reqQuery)
         
         if len(checkItemIdinPrice) == 0:
             db["prices"].insert(shortuuid.uuid(), idItem, 
                                 cleanUpCurrency(dataProduct[key]['price']), "", 
                                 datetime_today)
             newPrices += 1
-        
-        checkItemIdinDiscount = db.select(TABLE='discounts', SELECT='id', 
-            WHERE=(db['discounts']['items_id'] == idItem) &
-                (db['discounts']['created_at'] | LIKE | f'{date_today}%') &
-                (db['discounts']['discount_price'] == cleanUpCurrency(dataProduct[key]['price'])) &
-                (db['discounts']['original_price'] == cleanUpCurrency(dataProduct[key]['promotion']['original_price']))
-        )
+
+        reqQuery = {
+            'script': "SELECT id FROM discounts WHERE items_id=? AND created_at LIKE ? AND discount_price=? AND original_price=?",
+            'values': (idItem, f'{date_today}%', cleanUpCurrency(dataProduct[key]['price']), cleanUpCurrency(dataProduct[key]['promotion']['original_price']))
+        }
+        checkItemIdinDiscount = db.execute(**reqQuery)
 
         if len(checkItemIdinDiscount) == 0:
             db["discounts"].insert(shortuuid.uuid(), idItem, 
