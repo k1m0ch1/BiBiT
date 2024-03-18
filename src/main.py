@@ -1,9 +1,9 @@
-import schedule
-import time
-import logging
-import config
-import argparse
 import sys
+import time
+import config
+import logging
+import schedule
+import argparse
 
 from crawler.yogyaonline import getCategories as yogyaCategories
 from crawler.klikindomaret import getDataCategories as indoCategories

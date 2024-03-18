@@ -1,15 +1,15 @@
-import requests
 import re
 import json
+import pytz
 import logging
+import requests
+import shortuuid
+
 from bs4 import BeautifulSoup
 # from fp.fp import FreeProxy
 from datetime import datetime
-import pytz
-import shortuuid
-from util import cleanUpCurrency
-from sqllex import LIKE
 
+from util import cleanUpCurrency
 from db import DBSTATE
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
@@ -124,7 +124,6 @@ def scrap(URL, index, counter):
             newItems += 1
         else:
             idItem = checkIdItem[0][0]
-
 
         reqQuery = {
             'script': "SELECT id FROM prices WHERE items_id=? AND created_at LIKE ? AND price=?",

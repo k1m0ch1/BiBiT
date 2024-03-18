@@ -1,12 +1,13 @@
-import requests
 import sys
+import pytz
+import logging
+import requests
 import shortuuid
+
 from tqdm import tqdm
 from datetime import datetime
+
 from db import DBSTATE
-import logging
-import pytz
-from sqllex import LIKE
 
 db = DBSTATE
 HOST = "https://webcommerce-gw.alfagift.id/v2"
@@ -67,7 +68,12 @@ def catalog():
 
         for item in tqdm(getAllItem.json()['products'], desc=f"get {categoryData['currentCategoryName']} items", leave=False):
             
-            checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == item['sku']) | (db['items']['name'] == item['productName']))
+            reqQuery = {
+                'script': "SELECT id FROM items WHERE sku=? OR name=?",
+                'values': (item['sku'], item['productName'])
+            }
+            checkIdItem = db.execute(**reqQuery)
+
             now = datetime.now(pytz.timezone("Asia/Jakarta"))
             date_today = now.strftime("%Y-%m-%d")
             datetime_today = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -81,22 +87,22 @@ def catalog():
             else:
                 idItem = checkIdItem[0][0]
 
-            checkItemIdinPrice = db.select(TABLE='prices',
-                                           SELECT='id', 
-                                           WHERE=(db['prices']['items_id'] == idItem) & 
-                                           (db['prices']['created_at'] | LIKE | f'{date_today}%') & 
-                                           (db['prices']['price'] == item['finalPrice']))
+            reqQuery = {
+                'script': "SELECT id FROM prices WHERE items_id=? AND created_at LIKE ? AND price=?",
+                'values': (idItem, f'{date_today}%', item['finalPrice'])
+            }
+            checkItemIdinPrice = db.execute(**reqQuery)
+            
             if len(checkItemIdinPrice) == 0:
                     db["prices"].insert(shortuuid.uuid(), idItem, item['finalPrice'], "", datetime_today)
                     newPrices += 1
 
-            checkItemIdinDiscount = db.select(TABLE='discounts', 
-                                              SELECT='id', 
-                                              WHERE=(db['discounts']['items_id'] == idItem) &
-                                                (db['discounts']['created_at'] | LIKE | f'{date_today}%') &
-                                                (db['discounts']['discount_price'] == item['finalPrice']) &
-                                                (db['discounts']['original_price'] == item['basePrice'])
-                                             )
+            reqQuery = {
+                'script': "SELECT id FROM discounts WHERE items_id=? AND created_at LIKE ? AND discount_price=? AND original_price=?",
+                'values': (idItem, f'{date_today}%', item['finalPrice'], item['basePrice'])
+            }
+            checkItemIdinDiscount = db.execute(**reqQuery)
+
             if len(checkItemIdinDiscount) == 0:
                 db["discounts"].insert(shortuuid.uuid(), idItem, item['finalPrice'], item['basePrice'], item['discountPercent'], "", datetime_today)                
                 newDiscounts += 1

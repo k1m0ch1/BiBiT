@@ -1,15 +1,16 @@
+import re
+import pytz
 import requests
 import logging
-import re
 import shortuuid
-from bs4 import BeautifulSoup
+
 from tqdm import tqdm
+from bs4 import BeautifulSoup
 from datetime import datetime
-from sqllex import LIKE
 
 from db import DBSTATE
 from util import cleanUpCurrency
-import pytz
+
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 TARGET_URL = "https://www.klikindomaret.com"
@@ -121,7 +122,11 @@ def getDataCategories():
                     date_today = now.strftime("%Y-%m-%d")
                     datetime_today = now.strftime("%Y-%m-%d %H:%M:%S")
 
-                    checkIdItem = db.select(TABLE='items', SELECT='id', WHERE=(db['items']['sku'] == item['id']) | (db['items']['name'] == item['name']))
+                    reqQuery = {
+                        'script': "SELECT id FROM items WHERE sku=? OR name=?",
+                        'values': (item['id'], item['name'])
+                    }
+                    checkIdItem = db.execute(**reqQuery)
                     idItem = shortuuid.uuid()
 
                     if len(checkIdItem) == 0:
@@ -132,22 +137,21 @@ def getDataCategories():
                     else:
                         idItem = checkIdItem[0][0]
 
-                    checkItemIdinPrice = db.select(TABLE='prices', SELECT='id', 
-                        WHERE=(db['prices']['items_id'] == idItem) & 
-                            (db['prices']['created_at'] | LIKE | f'{date_today}%') & 
-                            (db['prices']['price'] == item['price'])
-                    )
+                    reqQuery = {
+                        'script': "SELECT id FROM prices WHERE items_id=? AND created_at LIKE ? AND price=?",
+                        'values': (idItem, f'{date_today}%', item['price'])
+                    }
+                    checkItemIdinPrice = db.execute(**reqQuery)
                     
                     if len(checkItemIdinPrice) == 0:
                         db["prices"].insert(shortuuid.uuid(), idItem, item['price'], "", datetime_today)
                         newPrices += 1
 
-                    checkItemIdinDiscount = db.select(TABLE='discounts', SELECT='id', 
-                        WHERE=(db['discounts']['items_id'] == idItem) &
-                            (db['discounts']['created_at'] | LIKE | f'{date_today}%') &
-                            (db['discounts']['discount_price'] == item['price']) &
-                            (db['discounts']['original_price'] == productOldPrice)
-                    )
+                    reqQuery = {
+                        'script': "SELECT id FROM discounts WHERE items_id=? AND created_at LIKE ? AND discount_price=? AND original_price=?",
+                        'values': (idItem, f'{date_today}%', item['price'], productOldPrice)
+                    }
+                    checkItemIdinDiscount = db.execute(**reqQuery)
 
                     if len(checkItemIdinDiscount) == 0:
                         db["discounts"].insert(shortuuid.uuid(), idItem, item['price'], productOldPrice, productPromotion, "", datetime_today)
