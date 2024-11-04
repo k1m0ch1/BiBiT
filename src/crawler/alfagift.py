@@ -111,6 +111,7 @@ def catalog():
     if newItems ==0 & newPrices==0 & newDiscounts==0:
         logging.info("=== i guess nothing different today")
 
+    return f"=== Finish scrap {totalItem} item by added {newItems} items, {newPrices} prices, {newDiscounts} discounts"
 
         
     

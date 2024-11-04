@@ -1,13 +1,17 @@
+import os
 import sys
 import time
 import config
 import logging
+from datetime import datetime
 import schedule
 import argparse
+import requests
 
 from crawler.yogyaonline import getCategories as yogyaCategories
 from crawler.klikindomaret import getDataCategories as indoCategories
 from crawler.alfagift import catalog as alfaCatalog
+from util import addRowHealth
 
 import uvicorn
 
@@ -23,15 +27,31 @@ app.include_router(belanja.router)
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
 def dataScrap(target: str):
+  
+    started_at= datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
     if target == 'yogyaonline':
-        yogyaCategories()
-    
+       output= yogyaCategories() 
+   
     if target == 'klikindomaret':
-        indoCategories()
+       output= indoCategories()
 
     if target == 'alfagift':
-        alfaCatalog()
+       output= alfaCatalog()
+
+    finished_at= datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    
+    running_at = requests.get("https://ipinfo.io/ip")
+
+    addRowHealth({
+        "task": f"Crawling {target}",
+        "status": "Completed",
+        "output": "" if len(output) == 0 else output,
+        "running_at": running_at.text,
+        "health_of": target,
+        "started_at": started_at,
+        "finished_at": finished_at
+    })
 
     return True
 

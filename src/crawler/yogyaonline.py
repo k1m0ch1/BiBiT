@@ -199,5 +199,5 @@ def getCategories():
     if counter['newItems'] ==0 & counter['newPrices']==0 & counter['newDiscounts']==0:
         logging.info("=== i guess nothing different today")
 
-    return compiledData
-
+    # return compiledData
+    return f"=== Finish scrap {len(compiledData)} item by added {counter['newItems']} items, {counter['newPrices']} prices, {counter['newDiscounts']} discounts"

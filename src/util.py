@@ -1,7 +1,10 @@
 from random import choice
 
+import os
 import time
 import logging
+import requests
+from requests.auth import HTTPBasicAuth
 
 logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 
@@ -16,3 +19,9 @@ def cleanUpCurrency(price: str) -> int:
         ggwp = ggwp[:-3]
     ggwp = ggwp.replace(".","").replace("\n","")
     return int(ggwp)
+
+def addRowHealth(reqData):
+    username = os.getenv("STEINDB_USERNAME", "")
+    password = os.getenv("STEINDB_PASSWORD", "")
+    steindb = os.getenv("STEINDB_URL", "")
+    req = requests.post(f"{steindb}/Healthcheck",json=[reqData], auth=HTTPBasicAuth(username, password))
