@@ -25,3 +25,5 @@ def addRowHealth(reqData):
     password = os.getenv("STEINDB_PASSWORD", "")
     steindb = os.getenv("STEINDB_URL", "")
     req = requests.post(f"{steindb}/Healthcheck",json=[reqData], auth=HTTPBasicAuth(username, password))
+    if req.status_code > 300:
+        print("dude its error")
