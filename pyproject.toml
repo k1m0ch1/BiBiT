@@ -1,0 +1,44 @@
+[project]
+name = "bibit"
+version = "1.0.0"
+description = "BiBiT - Grocery price tracking and notification bot for Indonesian e-commerce platforms"
+readme = "README.md"
+requires-python = ">=3.8.1"
+dependencies = [
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.2",
+    "tweepy>=4.14.0",
+    "schedule>=1.2.1",
+    "flake8>=6.1.0",
+    "fastapi>=0.104.1",
+    "uvicorn==0.24.0",
+    "free-proxy>=1.1.1",
+    "tqdm>=4.66.1",
+    "sqllex>=0.3.0",
+    "shortuuid>=1.0.11",
+    "urllib3<2",
+    "pytz>=2023.3",
+    "pydantic>=2.5.2",
+    "loguru>=0.6.0",
+    "lxml>=4.9.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.uv]
+dev-dependencies = []
+package = false
+
+[tool.flake8]
+max-line-length = 120
+exclude = [".git", "__pycache__", "venv", ".venv", "data"]
