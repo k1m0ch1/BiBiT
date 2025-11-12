@@ -4,7 +4,6 @@
 **BiBiT** (Indonesian: "sprout") is a grocery price tracking bot that monitors Indonesian e-commerce platforms (Yogya Online, Klik Indomaret, Alfagift), tracks historical prices, and provides search/comparison APIs.
 
 ## Tech Stack
-<<<<<<< HEAD
 - **Python 3.12** | FastAPI + Uvicorn | SQLite3 + SQLlex
 - **Scraping:** BeautifulSoup4, cloudscraper, requests, lxml
 - **Data:** Pydantic v2, pytz (Asia/Jakarta timezone)
@@ -15,13 +14,6 @@
 - `.context/function.md` for the function of the services
 - `.context/standard.md` for the standarization of how it work
 - `.context/technology.d` for the technology that has been used
-=======
-- **Python 3.8** | FastAPI + Uvicorn | SQLite3 + SQLlex
-- **Scraping:** BeautifulSoup4, requests, lxml
-- **Data:** Pydantic v2, pytz (Asia/Jakarta timezone)
-- **Tools:** schedule, tqdm, shortuuid, loguru, flake8
-- **Infra:** Docker (API + crawler containers), Pipenv
->>>>>>> 3ff4a9d (makes something better for future)
 
 ## Architecture
 ```
@@ -31,17 +23,11 @@ src/
 ├── db.py                # SQLite wrapper (indiemart.db, crawl.db)
 ├── models.py            # Pydantic validation models
 ├── util.py              # Currency parsing, delays, health reporting
-<<<<<<< HEAD
 ├── api_client/          # API clients for REST-based vendors
 │   └── klikindomaret_api.py  # Klik Indomaret API (with cloudscraper)
 ├── crawler/             # Vendor-specific scrapers
 │   ├── yogyaonline.py   # HTML scraping, JS object parsing
 │   ├── klikindomaret.py # ⚠️ BROKEN - needs replacement with API version
-=======
-├── crawler/             # Vendor-specific scrapers
-│   ├── yogyaonline.py   # HTML scraping, JS object parsing
-│   ├── klikindomaret.py # Multi-level categories, form pagination
->>>>>>> 3ff4a9d (makes something better for future)
 │   └── alfagift.py      # REST API-based (JSON responses)
 └── routes/              # FastAPI endpoints
     ├── root.py          # Product search API
@@ -124,11 +110,8 @@ Create list → Generate secret_key
   - Types: `fix:`, `add:`, `change:`
 - **Branch:** `master` (main branch)
 - **Recent changes:**
-<<<<<<< HEAD
   - Python 3.12 upgrade & cloudscraper integration (2025-11-12)
   - Klik Indomaret API client implementation (2025-11-12)
-=======
->>>>>>> 3ff4a9d (makes something better for future)
   - Migrated from ORM to raw SQL (commit: dd5a133)
   - Added metric recording (commit: 9cd9442)
   - Fixed linting (commit: 9ae395e)
@@ -173,7 +156,6 @@ Create list → Generate secret_key
 ## External Integrations
 1. **E-commerce Sites:**
    - yogyaonline.co.id (HTML scraping)
-<<<<<<< HEAD
    - klikindomaret.com (✅ **REST API via cloudscraper** - bot detection bypassed!)
    - alfagift.id (REST API)
 2. **Monitoring:** SteinDB (spreadsheet API for health checks)
@@ -444,12 +426,6 @@ cp src/crawler/klikindomaret.py src/crawler/klikindomaret_old.py
 
 ---
 
-=======
-   - klikindomaret.com (HTML scraping)
-   - alfagift.id (REST API)
-2. **Monitoring:** SteinDB (spreadsheet API for health checks)
-
->>>>>>> 3ff4a9d (makes something better for future)
 ## Feature Status
 - ✅ Multi-vendor scraping
 - ✅ Historical price storage
