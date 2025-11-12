@@ -3,7 +3,7 @@ name = "bibit"
 version = "1.0.0"
 description = "BiBiT - Grocery price tracking and notification bot for Indonesian e-commerce platforms"
 readme = "README.md"
-requires-python = ">=3.8.1"
+requires-python = ">=3.12"
 dependencies = [
     "requests>=2.31.0",
     "beautifulsoup4>=4.12.2",
@@ -21,6 +21,7 @@ dependencies = [
     "pydantic>=2.5.2",
     "loguru>=0.6.0",
     "lxml>=4.9.3",
+    "cloudscraper>=1.2.71",
 ]
 
 [project.optional-dependencies]
