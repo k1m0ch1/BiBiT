@@ -4,6 +4,7 @@ beautifulsoup4==4.12.2
 certifi==2023.11.17
 charset-normalizer==3.3.2
 click==8.1.7
+cloudscraper>=1.2.71
 exceptiongroup==1.2.0
 fastapi==0.104.1
 flake8==6.1.0
