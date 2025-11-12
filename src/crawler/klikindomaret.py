@@ -1,170 +1,183 @@
-import re
-import pytz
-import requests
+"""
+Klik Indomaret Crawler - API-based version
+Uses KlikIndomaretAPI with cloudscraper to bypass bot detection
+"""
+
 import logging
+import pytz
 import shortuuid
 
-from tqdm import tqdm
-from bs4 import BeautifulSoup
 from datetime import datetime
+from tqdm import tqdm
 
+from api_client.klikindomaret_api import KlikIndomaretAPI
 from db import DBSTATE
-from util import cleanUpCurrency
-
-
-logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
-TARGET_URL = "https://www.klikindomaret.com"
-
-pageParam = "?productbrandid=&sortcol=&pagesize=50&startprice=&endprice=&attributes="
-pageParam = {
-    "productbrandid": "",
-    "sorcol": "",
-    "pagesize": 50,
-    "startprice": "",
-    "endproce": "",
-    "attributes": "",
-    "page": 0,
-    "categories": ""
-}
 
 db = DBSTATE
 
+logging.basicConfig(
+    format='%(asctime)s - %(message)s',
+    datefmt='%d-%b-%y %H:%M:%S',
+    level=logging.INFO
+)
+
 
 def getDataCategories():
+    """
+    Main scraping function for Klik Indomaret
+    Uses API client instead of HTML scraping
+    """
     newItems = 0
     totalItem = 0
     newPrices = 0
     newDiscounts = 0
-    resp = requests.get(TARGET_URL)
-    parser = BeautifulSoup(resp.text, 'html.parser')
-    categoryClass = parser.find("div", {"class": "container-wrp-menu bg-white list-shadow list-category-mobile"})
-    if categoryClass is None:
-        # sM = sendMessage("Scrapper klikindomaret ga berfungsi", f"Error di {frameinfo.filename} {frameinfo.lineno}", "I can't get the categories data on klikindomaret.com probably class `container-wrp-menu bg-white list-shadow list-category-mobile` is changed, go check klikindomaret.com on the categories list")
-        return []
-    
-    categories = list()
-    
-    # Untuk Sub_Category yang tidak ada anaknya
-    c1 = categoryClass.findAll('span', attrs = {'class':'clickMenu'})
-    for c1_element in c1:
-        if c1_element.a is not None:
-            link = c1_element.find('a')['href']
-            categories.append(link)
-        
-    # Untuk Sub_Category yang ada anaknya
-    c2 = categoryClass.findAll('ul', attrs = {'class':'nd-kategori'})
-    for c2_element in c2:
-        c2_element_menu = c2_element.find('li', attrs = {'class':'menu-seeall'})
-        if c2_element_menu is not None:
-            link = c2_element_menu.a['href']
-            categories.append(link)
 
-    products = []
-    product_Ids = []
+    try:
+        # Initialize API client
+        api = KlikIndomaretAPI()
 
-    for category in tqdm(categories, desc="Scrape Category"):
-        category_name = category.split("/")[2]
-        category_url = TARGET_URL+category
-        getPage = requests.get(category_url)
-        parser = BeautifulSoup(getPage.text, 'html.parser')
-        if parser.find("select", {"id": "ddl-filtercategory-sort"}) is not None:
-            getPageList = parser.find("select", {"class": "form-control pagelist"})
-            if getPageList is None:
-                logging.error("Scrapper klikindomaret ga berfungsi")
-                # sM = sendMessage("Scrapper klikindomaret ga berfungsi", f"Error di {frameinfo.filename} {frameinfo.lineno}", f"I can't get the PageList from {TARGET_URL}{category}, probably have no data, but please check it first")
-                continue
-            maxPage = len(getPageList.find_all('option'))
-            for page in tqdm(range(0, maxPage), desc=f"Scrape all page from {category_name}", leave=False):
-                # logging.info(f"{category_url}{pageParam}&page={page+1}")
-                pageParam["page"] = page+1
-                pageParam["categories"] = category_name
-                categoryPage = requests.get(f"{category_url}", params=pageParam)
-                parser = BeautifulSoup(categoryPage.text, 'html.parser')
+        # Get all categories
+        categories = api.get_categories()
+        logging.info(f"Found {len(categories)} categories to scrape")
 
-                getItem = parser.find_all("div", {"id": re.compile("^categoryFilterProduct-")})
-                for index, item in enumerate(getItem):
-                    # print(products)
-                    productID = item.find("div", {'class': f'sendby oksendby classsendby{index+1}'}).get('selecteds')
-                    container = item.find('div', {'class': 'wrp-content'})
-                    dikirimOleh = container.find('span', {'class': 'sendbyProduct'}).find('span').get('class')
-                    dikirimOleh = container.find('span', {'class': 'sendbyProduct'}).find('span', {'class': dikirimOleh})
-                    if container.find('span', {'class': 'strikeout disc-price'}) is None:
-                        productOldPrice = 0
-                    else:
-                        mantap = container.find('span', {'class': 'strikeout disc-price'}).text.split("\n")
-                        if len(mantap)>2:
-                            productOldPrice = mantap[2]
-                        else:
-                            print(f"{mantap} - DUDE INI ANEH SIH")
-                            productOldPrice = 0
-                        
+        # Process each category
+        for category in tqdm(categories, desc="Processing categories"):
+            category_id = str(category.get('id'))
+            category_name = category.get('name', 'Unknown')
 
-                    # productOldPrice = 0 if container.find('span', {'class': 'strikeout disc-price'}) is None else cleanUpCurrency(container.find('span', {'class': 'strikeout disc-price'}).text.split("\n")[2])
-                    productPromotion = 0 if container.find('span', {'class': 'discount'}) is None else container.find('span', {'class': 'discount'}).get_text().replace("\n", "").replace(" ", "")
-                    productPrice = container.find('span', {'class': 'normal price-value'}).get_text()
+            # Get all products for this category
+            try:
+                products = api.get_all_products_for_category(
+                    category_id=category_id,
+                    category_name=category_name
+                )
 
-                    item = {
-                        'name': container.find('div', {'class': 'title'}).get_text().replace("\n", ""),
-                        'id': productID,
-                        'sub_category':category_name.replace("-1","").replace("-"," "),
-                        'price': cleanUpCurrency(productPrice),
-                        'link': f"{TARGET_URL}{item.find('a').get('href')}",
-                        'image': item.find('img').get('data-src'),
-                        "promotion": {
-                            "type": productPromotion,
-                            "original_price": productOldPrice
-                        }
-                    }
-                    totalItem += 1
+                # Process each product
+                for product in tqdm(
+                    products,
+                    desc=f"Processing {category_name}",
+                    leave=False
+                ):
+                    # Get product data with proper field mapping
+                    product_id = str(product.get('productId', ''))
+                    plu = str(product.get('plu', ''))
+                    product_name = product.get('productName', '')
+                    image_url = product.get('imageUrl', '')
+                    permalink = product.get('permalink', '')
+                    price = product.get('price', 0)
+                    final_price = product.get('finalPrice')
+                    discount_text = product.get('discountText', '')
 
+                    # Skip if essential data is missing
+                    if not product_name or not plu:
+                        logging.warning(f"Skipping product with missing data: {product}")
+                        continue
 
+                    # Build full product URL
+                    product_link = (
+                        f"https://www.klikindomaret.com/product/{permalink}"
+                        if permalink else ""
+                    )
+
+                    # Get current datetime in Asia/Jakarta timezone
                     now = datetime.now(pytz.timezone("Asia/Jakarta"))
                     date_today = now.strftime("%Y-%m-%d")
                     datetime_today = now.strftime("%Y-%m-%d %H:%M:%S")
 
+                    # Check if item already exists (by PLU or name)
                     reqQuery = {
                         'script': "SELECT id FROM items WHERE sku=? OR name=?",
-                        'values': (item['id'], item['name'])
+                        'values': (plu, product_name)
                     }
                     checkIdItem = db.execute(**reqQuery)
-                    idItem = shortuuid.uuid()
 
+                    idItem = product_id
+                    totalItem += 1
+
+                    # Insert new item if it doesn't exist
                     if len(checkIdItem) == 0:
-                        db["items"].insert(idItem, item['id'], item['name'], 
-                                           item['sub_category'], item['image'], item['link'], 
-                                           'klikindomaret', datetime_today)
+                        db["items"].insert(
+                            product_id,
+                            plu,
+                            product_name,
+                            category_name,
+                            image_url,
+                            product_link,
+                            'klikindomaret',
+                            datetime_today
+                        )
                         newItems += 1
                     else:
                         idItem = checkIdItem[0][0]
 
+                    # Use final_price if available, otherwise use regular price
+                    current_price = final_price if final_price is not None else price
+
+                    # Check if today's price already exists
                     reqQuery = {
-                        'script': "SELECT id FROM prices WHERE items_id=? AND created_at LIKE ? AND price=?",
-                        'values': (idItem, f'{date_today}%', item['price'])
+                        'script': (
+                            "SELECT id FROM prices "
+                            "WHERE items_id=? AND created_at LIKE ? AND price=?"
+                        ),
+                        'values': (idItem, f'{date_today}%', current_price)
                     }
                     checkItemIdinPrice = db.execute(**reqQuery)
-                    
+
+                    # Insert new price if it doesn't exist
                     if len(checkItemIdinPrice) == 0:
-                        db["prices"].insert(shortuuid.uuid(), idItem, item['price'], "", datetime_today)
+                        db["prices"].insert(
+                            shortuuid.uuid(),
+                            idItem,
+                            current_price,
+                            "",
+                            datetime_today
+                        )
                         newPrices += 1
 
-                    reqQuery = {
-                        'script': "SELECT id FROM discounts WHERE items_id=? AND created_at LIKE ? AND discount_price=? AND original_price=?",
-                        'values': (idItem, f'{date_today}%', item['price'], productOldPrice)
-                    }
-                    checkItemIdinDiscount = db.execute(**reqQuery)
+                    # Handle discounts (if finalPrice is different from price)
+                    if final_price is not None and final_price < price:
+                        # Calculate discount percentage
+                        discount_percent = int(((price - final_price) / price) * 100)
 
-                    if len(checkItemIdinDiscount) == 0:
-                        db["discounts"].insert(shortuuid.uuid(), idItem, item['price'], productOldPrice, productPromotion, "", datetime_today)
-                        newDiscounts += 1
-                    
-                    if productID not in product_Ids:
-                        product_Ids.append(productID)
+                        reqQuery = {
+                            'script': (
+                                "SELECT id FROM discounts "
+                                "WHERE items_id=? AND created_at LIKE ? "
+                                "AND discount_price=? AND original_price=?"
+                            ),
+                            'values': (idItem, f'{date_today}%', final_price, price)
+                        }
+                        checkItemIdinDiscount = db.execute(**reqQuery)
 
-                        products.append(item)
-                    else:
-                        # logging.info(f"Product {productName} is already exist, skip this item")
-                        continue
-    logging.info(f"=== Finish scrap {totalItem} item by added {newItems} items, {newPrices} prices, {newDiscounts} discounts")
-    if newItems ==0 & newPrices==0 & newDiscounts==0:
-        logging.info("=== i guess nothing different today")
-    return products
+                        if len(checkItemIdinDiscount) == 0:
+                            db["discounts"].insert(
+                                shortuuid.uuid(),
+                                idItem,
+                                final_price,
+                                price,
+                                discount_percent,
+                                discount_text,
+                                datetime_today
+                            )
+                            newDiscounts += 1
+
+            except Exception as e:
+                logging.error(f"Error processing category {category_name}: {str(e)}")
+                continue
+
+        # Log summary
+        summary = (
+            f"=== Finish scrap {totalItem} items by added {newItems} items, "
+            f"{newPrices} prices, {newDiscounts} discounts"
+        )
+        logging.info(summary)
+
+        if newItems == 0 and newPrices == 0 and newDiscounts == 0:
+            logging.info("=== I guess nothing different today")
+
+        return summary
+
+    except Exception as e:
+        error_msg = f"=== ERROR: Scraping failed - {str(e)}"
+        logging.error(error_msg)
+        return error_msg

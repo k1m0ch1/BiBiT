@@ -3,11 +3,11 @@ Klik Indomaret API Client
 Uses cloudscraper to bypass Cloudflare bot detection
 """
 
-import json
 import logging
-import time
 import random
+import time
 from typing import Dict, List, Optional
+
 import cloudscraper
 
 logging.basicConfig(
@@ -30,7 +30,11 @@ class KlikIndomaretAPI:
 
         # Try to mimic browser as closely as possible
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
+            'User-Agent': (
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/142.0.0.0 Safari/537.36'
+            ),
             'Accept': 'application/json, text/plain, */*',
             'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
             'Accept-Encoding': 'gzip, deflate, br, zstd',
@@ -40,7 +44,9 @@ class KlikIndomaretAPI:
             'Sec-Fetch-Dest': 'empty',
             'Sec-Fetch-Mode': 'cors',
             'Sec-Fetch-Site': 'same-site',
-            'sec-ch-ua': '"Chromium";v="142", "Google Chrome";v="142", "Not_A Brand";v="99"',
+            'sec-ch-ua': (
+                '"Chromium";v="142", "Google Chrome";v="142", "Not_A Brand";v="99"'
+            ),
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Windows"',
         })
@@ -60,7 +66,10 @@ class KlikIndomaretAPI:
     def get_categories(self) -> List[Dict]:
         """Get all categories"""
         logging.info("Fetching categories...")
-        endpoint = "/assets-klikidmgroceries/api/get/catalog-xpress/api/webapp/category/meta"
+        endpoint = (
+            "/assets-klikidmgroceries/api/get/"
+            "catalog-xpress/api/webapp/category/meta"
+        )
         url = f"{self.BASE_URL}{endpoint}"
 
         self._rate_limit()
@@ -75,15 +84,31 @@ class KlikIndomaretAPI:
             return categories
 
         except Exception as e:
-            if hasattr(e, 'response') and hasattr(e.response, 'status_code') and e.response.status_code == 403:
-                logging.error("403 Forbidden - Bot detection still triggered despite cloudscraper!")
+            if (hasattr(e, 'response') and
+                    hasattr(e.response, 'status_code') and
+                    e.response.status_code == 403):
+                logging.error(
+                    "403 Forbidden - Bot detection still triggered "
+                    "despite cloudscraper!"
+                )
                 logging.error("You may need to try playwright as an alternative.")
-                raise Exception("API blocked request even with cloudscraper. Consider using playwright.")
+                raise Exception(
+                    "API blocked request even with cloudscraper. "
+                    "Consider using playwright."
+                )
             raise
 
-    def get_products(self, page: int = 0, size: int = 50, category_id: Optional[str] = None) -> Dict:
+    def get_products(
+        self,
+        page: int = 0,
+        size: int = 50,
+        category_id: Optional[str] = None
+    ) -> Dict:
         """Get products with pagination"""
-        endpoint = "/assets-klikidmcore/api/get/catalog-xpress/api/webapp/search/result"
+        endpoint = (
+            "/assets-klikidmcore/api/get/"
+            "catalog-xpress/api/webapp/search/result"
+        )
         url = f"{self.BASE_URL}{endpoint}"
 
         params = {
@@ -101,37 +126,64 @@ class KlikIndomaretAPI:
             return response.json()
 
         except Exception as e:
-            if hasattr(e, 'response') and hasattr(e.response, 'status_code') and e.response.status_code == 403:
-                logging.error("403 Forbidden - Bot detection still triggered despite cloudscraper!")
-                raise Exception("API blocked request even with cloudscraper. Consider using playwright.")
+            if (hasattr(e, 'response') and
+                    hasattr(e.response, 'status_code') and
+                    e.response.status_code == 403):
+                logging.error(
+                    "403 Forbidden - Bot detection still triggered "
+                    "despite cloudscraper!"
+                )
+                raise Exception(
+                    "API blocked request even with cloudscraper. "
+                    "Consider using playwright."
+                )
             raise
 
-    def get_all_products_for_category(self, category_id: str, category_name: str = "Unknown") -> List[Dict]:
+    def get_all_products_for_category(
+        self,
+        category_id: str,
+        category_name: str = "Unknown"
+    ) -> List[Dict]:
         """Get all products for a specific category (handles pagination)"""
-        logging.info(f"Fetching all products for category: {category_name} (ID: {category_id})")
+        logging.info(
+            f"Fetching all products for category: "
+            f"{category_name} (ID: {category_id})"
+        )
 
         all_products = []
 
         # Get first page to determine total pages
-        first_page_response = self.get_products(page=0, size=50, category_id=category_id)
+        first_page_response = self.get_products(
+            page=0, size=50, category_id=category_id
+        )
         first_page_data = first_page_response.get('data', {})
 
         total_pages = first_page_data.get('totalPages', 1)
         total_elements = first_page_data.get('totalElements', 0)
 
-        logging.info(f"Category has {total_elements} products across {total_pages} pages")
+        logging.info(
+            f"Category has {total_elements} products "
+            f"across {total_pages} pages"
+        )
 
         # Add first page products
         all_products.extend(first_page_data.get('content', []))
 
         # Fetch remaining pages
         for page_num in range(1, total_pages):
-            logging.info(f"Fetching page {page_num + 1}/{total_pages} for {category_name}")
-            page_response = self.get_products(page=page_num, size=50, category_id=category_id)
+            logging.info(
+                f"Fetching page {page_num + 1}/{total_pages} "
+                f"for {category_name}"
+            )
+            page_response = self.get_products(
+                page=page_num, size=50, category_id=category_id
+            )
             page_data = page_response.get('data', {})
             all_products.extend(page_data.get('content', []))
 
-        logging.info(f"Retrieved {len(all_products)} products for {category_name}")
+        logging.info(
+            f"Retrieved {len(all_products)} products for {category_name}"
+        )
         return all_products
 
 
