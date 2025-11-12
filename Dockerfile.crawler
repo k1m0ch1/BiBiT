@@ -1,16 +1,27 @@
-FROM python:3.8
+FROM python:3.12-slim
 
-ARG PLATFORM
+# Build arguments with defaults for testing
+ARG PLATFORM=klikindomaret
 ENV PLATFORM=${PLATFORM}
-ARG STEINDB_URL
+ARG STEINDB_URL=""
 ENV STEINDB_URL=${STEINDB_URL}
-ARG STEINDB_USERNAME
+ARG STEINDB_USERNAME=""
 ENV STEINDB_USERNAME=${STEINDB_USERNAME}
-ARG STEINDB_PASSWORD
+ARG STEINDB_PASSWORD=""
 ENV STEINDB_PASSWORD=${STEINDB_PASSWORD}
 
 WORKDIR /app
 
-ADD . /app/.
-RUN pip install -r requirements.txt
+# Copy only dependency files first (for better caching)
+COPY requirements.txt pyproject.toml ./
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application
+COPY . .
+
+# Create data directory
+RUN mkdir -p data
+
 CMD ["sh", "-c", "python src/main.py --target ${PLATFORM} do.scrap"]
