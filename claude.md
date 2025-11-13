@@ -13,7 +13,7 @@
 
 ## Current Status (2025-11-13)
 ✅ **All vendors operational with cloudscraper:**
-- **Yogya Online** - ✅ **IMPROVED! HTML + JS scraping (cloudscraper + rate limiting)**
+- **Yogya Online** - ✅ **IMPROVED! Infinite scroll with AJAX POST (cloudscraper + rate limiting)**
 - **Klik Indomaret** - ✅ **NEW! REST API (cloudscraper)** - Fully functional
 - **Alfagift** - REST API (requests)
 
@@ -40,8 +40,9 @@ src/
 │   ├── __init__.py      # Package initialization
 │   └── klikindomaret_api.py  # Klik Indomaret API (with cloudscraper)
 ├── crawler/             # Vendor-specific scrapers
-│   ├── yogyaonline.py   # ✅ HTML scraping + JS parsing (with cloudscraper)
+│   ├── yogyaonline.py   # ✅ Infinite scroll AJAX (with cloudscraper)
 │   ├── yogyaonline_old.py    # Archived version without rate limiting
+│   ├── yogyaonline_old_pagination.py  # Archived broken pagination version
 │   ├── klikindomaret.py # ✅ REST API-based (with cloudscraper)
 │   ├── klikindomaret_old.py  # Archived broken HTML scraper
 │   └── alfagift.py      # REST API-based (JSON responses)
@@ -475,76 +476,90 @@ docker build -f Dockerfile.crawler \
 
 ---
 
-## ✅ Yogya Online Scraper Improvements (2025-11-13)
+## ✅ Yogya Online Scraper - Infinite Scroll Fix (2025-11-13)
 
 ### Summary
-Improved the existing Yogya Online scraper to use **cloudscraper** for better reliability and added **rate limiting** to avoid overwhelming the server.
+Fixed the Yogya Online scraper to use **infinite scroll AJAX POST requests** instead of broken pagination. The old pagination method (`?p={page_num}`) only fetched ~2 pages (~28 products), while the new method fetches **all products** (e.g., 208 products from Sayur-Sayuran category).
 
-### What Was Improved
+### The Problem
 
-**Before:**
-- ❌ Used plain `requests` library
-- ❌ No rate limiting between requests
-- ❌ Unnecessary request to google.com
-- ❌ Long SQL queries (linting issues)
-- ❌ Missing discount percentage calculation
-- ❌ Inconsistent error handling (print vs logging)
-- ❌ Commented-out unused imports
+**Old Approach (BROKEN):**
+- ❌ Used URL pagination: `?p={page_num}&product_list_limit=640`
+- ❌ Only scraped 2 pages per category (~28 products)
+- ❌ Missed hundreds of products due to infinite scroll
+
+**Discovery:**
+- Website uses **infinite scroll** with AJAX POST to `/load-more-product`
+- Payload: `{current_page: N, brands: [], category_id: ID}`
+- Requires **XSRF token** from cookie
+- Response: JSON with HTML fragment + pagination metadata
+
+### What Was Fixed
 
 **After:**
-- ✅ Uses `cloudscraper.create_scraper()` for bot detection bypass
+- ✅ **AJAX POST requests** to `/load-more-product` endpoint
+- ✅ **XSRF token** extraction from cookies
+- ✅ **Category ID** auto-detection from `data-category-id` attribute
+- ✅ **All pages** fetched (e.g., 16 pages = 208 products)
 - ✅ Rate limiting: 1.0-2.5 seconds between requests
-- ✅ Removed unnecessary requests
-- ✅ All SQL queries properly wrapped (lint-compliant)
-- ✅ Discount percentage calculated correctly
-- ✅ Consistent logging throughout
-- ✅ Clean imports, no dead code
-- ✅ Better code organization with helper functions
-- ✅ Improved error handling with try/except blocks
-- ✅ Better documentation and docstrings
+- ✅ Reuses cloudscraper session across all requests
+- ✅ Better error handling with try/except blocks
+- ✅ Detailed logging for each page fetch
 
 ### Key Features
 
-1. **Cloudscraper Integration:**
+1. **Infinite Scroll AJAX:**
    ```python
-   scraper = cloudscraper.create_scraper()
-   response = scraper.get(target_url, timeout=30)
+   # Extract XSRF token from cookie
+   xsrf_token = scraper.cookies.get('XSRF-TOKEN')
+   xsrf_token = urllib.parse.unquote(xsrf_token)
+
+   # POST request to load-more-product endpoint
+   headers['X-XSRF-TOKEN'] = xsrf_token
+   response = scraper.post(url, json=payload, headers=headers)
+
+   # Parse JSON response
+   data = response.json()
+   html_content = data.get('html', '')
+   total_pages = data.get('total_page', 0)
    ```
 
-2. **Rate Limiting:**
+2. **Category ID Auto-Detection:**
    ```python
-   def _rate_limit():
-       """Simple rate limiting to avoid overwhelming the server"""
-       time.sleep(random.uniform(1.0, 2.5))
+   # Extract from data-category-id attribute
+   cat_elem = parser.find(attrs={'data-category-id': True})
+   category_id = int(cat_elem['data-category-id'])
    ```
 
-3. **Discount Percentage Calculation:**
-   ```python
-   discount_percent = int(((original_price - price) / original_price) * 100)
-   ```
+3. **Fixed HTML Parsing:**
+   - Changed from `<a class="product-name">` to `<div class="product-name">`
+   - Extract `onclick` from div instead of link
+   - Get product link from `<a class="product-image-container">`
 
 4. **Modular Functions:**
-   - `scrap_page()` - Scrape a single page
-   - `_parse_page()` - Parse HTML content
-   - `_extract_promotions()` - Extract promotion data
-   - `_extract_product_data()` - Extract JavaScript data
-   - `_process_products()` - Combine and process products
+   - `scrape_category()` - Main category scraping logic
+   - `_fetch_products_page()` - Fetch single page via AJAX
+   - `_extract_category_id()` - Auto-detect category ID
+   - `_extract_product_from_html()` - Parse product HTML
    - `_save_product_to_db()` - Database operations
 
-5. **Better Error Handling:**
-   - Proper exception catching
-   - Consistent logging
-   - Graceful degradation on errors
+### Test Results
+
+**Sayur-Sayuran Category:**
+- Old scraper: ~28 products (2 pages)
+- New scraper: **208 products (16 pages)** ✅
+- All products from infinite scroll now captured!
 
 ### Database Format
-Follows the same format as **alfagift** and **klikindomaret:**
+Same format as **alfagift** and **klikindomaret:**
 - ✅ Items: sku, name, category, image, link, source
 - ✅ Prices: daily tracking with deduplication
 - ✅ Discounts: with percentage calculation
 
 ### Files Modified
-- `src/crawler/yogyaonline.py` - **Completely refactored**
-- `src/crawler/yogyaonline_old.py` - Archived original
+- `src/crawler/yogyaonline.py` - **Complete rewrite for infinite scroll**
+- `src/crawler/yogyaonline_old.py` - Archived version with rate limiting
+- `src/crawler/yogyaonline_old_pagination.py` - Archived broken pagination version
 
 ---
 

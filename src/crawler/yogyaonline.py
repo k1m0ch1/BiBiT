@@ -1,13 +1,14 @@
 """
-Yogya Online Crawler - Updated for new website structure
-Uses cloudscraper for bot detection bypass and HTML parsing
-Website changed to supermarket.yogyaonline.co.id subdomain
+Yogya Online Crawler - Updated with infinite scroll support
+Uses cloudscraper for bot detection bypass and AJAX POST requests for pagination
+Website uses infinite scroll with /load-more-product endpoint
 """
 
 import logging
 import random
 import re
 import time
+import urllib.parse
 from datetime import datetime
 
 import cloudscraper
@@ -26,7 +27,6 @@ logging.basicConfig(
 )
 
 db = DBSTATE
-CATEGORIES = {}
 
 
 def _rate_limit():
@@ -34,78 +34,105 @@ def _rate_limit():
     time.sleep(random.uniform(1.0, 2.5))
 
 
-def scrap_page(url, page_num, item_limit, counter):
+def _extract_category_id(parser):
+    """Extract category ID from the page HTML"""
+    # Look for data-category-id attribute
+    cat_elem = parser.find(attrs={'data-category-id': True})
+    if cat_elem:
+        return int(cat_elem['data-category-id'])
+    return None
+
+
+def _fetch_products_page(scraper, category_url, category_id, page_num):
     """
-    Scrape a single page from a category
+    Fetch a page of products using the load-more-product AJAX endpoint
 
     Args:
-        url: Category URL
-        page_num: Page number to scrape
-        item_limit: Number of items per page
-        counter: Dictionary tracking new items/prices/discounts
+        scraper: cloudscraper session
+        category_url: Original category URL (for referer)
+        category_id: Category ID
+        page_num: Page number to fetch
 
     Returns:
-        List of product data, or empty list on error
+        dict with 'products', 'total_pages', 'success' keys
     """
-    target_url = f"{url}?p={page_num}&product_list_limit={item_limit}"
-    logging.info(f"Scraping {url} page {page_num}")
+    url = 'https://supermarket.yogyaonline.co.id/load-more-product'
 
-    # Create cloudscraper session
-    scraper = cloudscraper.create_scraper()
-    _rate_limit()
+    # Get XSRF token from cookie
+    xsrf_token = scraper.cookies.get('XSRF-TOKEN')
+    if xsrf_token:
+        xsrf_token = urllib.parse.unquote(xsrf_token)
+
+    payload = {
+        'current_page': page_num,
+        'brands': [],
+        'category_id': category_id
+    }
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': category_url,
+    }
+
+    if xsrf_token:
+        headers['X-XSRF-TOKEN'] = xsrf_token
 
     try:
-        response = scraper.get(target_url, timeout=30)
+        _rate_limit()
+        response = scraper.post(url, json=payload, headers=headers, timeout=30)
 
-        # Handle 503 by reducing item limit
-        if response.status_code == 503:
-            new_limit = int(item_limit / 2)
-            CATEGORIES[url]['item_limit'] = new_limit
-            logging.warning(
-                f"503 error, reducing item_limit to {new_limit}"
+        if response.status_code != 200:
+            logging.error(
+                f"Failed to fetch page {page_num}: "
+                f"Status {response.status_code}"
             )
-            return []
+            return {'products': [], 'total_pages': 0, 'success': False}
 
-        response.raise_for_status()
+        data = response.json()
+
+        if not data.get('status'):
+            logging.error(
+                f"API returned error for page {page_num}: "
+                f"{data.get('message')}"
+            )
+            return {'products': [], 'total_pages': 0, 'success': False}
+
+        # Parse HTML from response
+        html_content = data.get('html', '')
+        parser = BeautifulSoup(html_content, 'html.parser')
+
+        # Find all product items
+        product_divs = parser.find_all("div", class_="product-item")
+
+        products = []
+        for div in product_divs:
+            product = _extract_product_from_html(div)
+            if product:
+                products.append(product)
+
+        return {
+            'products': products,
+            'total_pages': data.get('total_page', 0),
+            'success': True
+        }
 
     except Exception as e:
-        logging.error(f"Error fetching {target_url}: {str(e)}")
-        return []
-
-    return _parse_page(response.text, counter)
-
-
-def _parse_page(html_content, counter):
-    """Parse HTML content and extract product data using new structure"""
-    parser = BeautifulSoup(html_content, 'html.parser')
-
-    # Find all product items using new structure
-    product_divs = parser.find_all("div", class_="product-item box-shadow-light")
-
-    logging.info(f"Found {len(product_divs)} product items")
-
-    products = []
-
-    for div in product_divs:
-        product = _extract_product_from_html(div)
-        if product:
-            # Save to database
-            _save_product_to_db(product, counter)
-            products.append(product)
-
-    return products
+        logging.error(f"Error fetching page {page_num}: {str(e)}")
+        return {'products': [], 'total_pages': 0, 'success': False}
 
 
 def _extract_product_from_html(div):
     """Extract product data from HTML div element"""
     try:
-        # Extract product name link
-        name_link = div.find("a", class_="product-name")
-        if not name_link:
+        # Extract product name from div with product-name class
+        name_div = div.find("div", class_="product-name")
+        if not name_div:
             return None
 
         # Extract SKU and name from onclick attribute
-        onclick = name_link.get('onclick', '')
+        onclick = name_div.get('onclick', '')
         match = re.search(
             r"viewProduct\('([^']+)',\s*null,\s*'([^']*)',\s*'([^']*)'\)",
             onclick
@@ -118,8 +145,9 @@ def _extract_product_from_html(div):
         brand = match.group(2)
         name = match.group(3)
 
-        # Extract link
-        link = name_link.get('href', '')
+        # Extract link from image container link
+        link_elem = div.find("a", class_="product-image-container")
+        link = link_elem.get('href', '') if link_elem else ''
 
         # Extract image
         img_tag = div.find("img", class_="product-image")
@@ -270,6 +298,76 @@ def _save_product_to_db(product, counter):
             counter['newDiscounts'] += 1
 
 
+def scrape_category(scraper, category_url):
+    """
+    Scrape all products from a single category using infinite scroll
+
+    Args:
+        scraper: cloudscraper session
+        category_url: URL of the category page
+
+    Returns:
+        list of products
+    """
+    logging.info(f"Scraping category: {category_url}")
+
+    # First, visit the category page to get cookies and category ID
+    _rate_limit()
+    response = scraper.get(category_url, timeout=30)
+
+    if response.status_code != 200:
+        logging.error(
+            f"Failed to load category page: {response.status_code}"
+        )
+        return []
+
+    # Parse the page to find category ID
+    parser = BeautifulSoup(response.text, 'html.parser')
+    category_id = _extract_category_id(parser)
+
+    if not category_id:
+        logging.error(f"Could not find category ID for {category_url}")
+        return []
+
+    logging.info(f"Found category ID: {category_id}")
+
+    # Get first page to determine total pages
+    result = _fetch_products_page(scraper, category_url, category_id, 1)
+
+    if not result['success']:
+        logging.error("Failed to fetch first page")
+        return []
+
+    all_products = result['products']
+    total_pages = result['total_pages']
+
+    logging.info(
+        f"Category has {total_pages} pages, "
+        f"fetched {len(all_products)} products from page 1"
+    )
+
+    # Fetch remaining pages
+    for page_num in range(2, total_pages + 1):
+        logging.info(f"Fetching page {page_num}/{total_pages}")
+        result = _fetch_products_page(
+            scraper, category_url, category_id, page_num
+        )
+
+        if result['success']:
+            all_products.extend(result['products'])
+            logging.info(
+                f"Fetched {len(result['products'])} products from "
+                f"page {page_num}"
+            )
+        else:
+            logging.warning(f"Failed to fetch page {page_num}, skipping")
+
+    logging.info(
+        f"Finished scraping category, total products: {len(all_products)}"
+    )
+    return all_products
+
+
 def getCategories():
     """
     Main entry point - scrape all categories from Yogya Online
@@ -300,6 +398,9 @@ def getCategories():
         "newDiscounts": 0
     }
 
+    # Create cloudscraper session (reuse across all categories)
+    scraper = cloudscraper.create_scraper()
+
     compiled_data = []
 
     # Scrape each category
@@ -307,28 +408,22 @@ def getCategories():
         tqdm(categories, desc="Scraping categories")
     ):
         logging.info(
-            f"Processing category {cat_index + 1}/{len(categories)}: {category}"
+            f"Processing category {cat_index + 1}/{len(categories)}: "
+            f"{category}"
         )
 
-        # Initialize category config
-        CATEGORIES[category] = {"item_limit": 640}
+        products = scrape_category(scraper, category)
 
-        # Scrape first page
-        page_num = 1
-        prev_data = []
-        curr_data = scrap_page(category, page_num, 640, counter)
-        compiled_data.extend(curr_data)
+        # Save products to database
+        for product in products:
+            _save_product_to_db(product, counter)
 
-        # Continue scraping pages until we get no new data
-        page_num = 2
-        while len(curr_data) > 0 and curr_data != prev_data:
-            prev_data = curr_data
-            item_limit = CATEGORIES[category]['item_limit']
-            curr_data = scrap_page(category, page_num, item_limit, counter)
+        compiled_data.extend(products)
 
-            if curr_data:
-                compiled_data.extend(curr_data)
-                page_num += 1
+        logging.info(
+            f"Category {cat_index + 1} complete: "
+            f"{len(products)} products scraped"
+        )
 
     # Log summary
     summary = (
