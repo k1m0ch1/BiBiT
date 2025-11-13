@@ -1,9 +1,9 @@
 """
-Yogya Online Crawler - Improved version
-Uses cloudscraper for better reliability and rate limiting
+Yogya Online Crawler - Updated for new website structure
+Uses cloudscraper for bot detection bypass and HTML parsing
+Website changed to supermarket.yogyaonline.co.id subdomain
 """
 
-import json
 import logging
 import random
 import re
@@ -76,152 +76,108 @@ def scrap_page(url, page_num, item_limit, counter):
 
 
 def _parse_page(html_content, counter):
-    """Parse HTML content and extract product data"""
+    """Parse HTML content and extract product data using new structure"""
     parser = BeautifulSoup(html_content, 'html.parser')
 
-    # Extract product links
-    list_items = parser.find_all(
-        "ol", {"class": "products list items product-items"}
-    )
-    product_links = []
-    if len(list_items) > 0:
-        links = list_items[0].find_all(
-            "a", {"class": "product-item-link"}, href=True
-        )
-        product_links = [item['href'] for item in links]
+    # Find all product items using new structure
+    product_divs = parser.find_all("div", class_="product-item box-shadow-light")
 
-    # Extract product images
-    product_images = [
-        item.get('data-original')
-        for item in parser.find_all(
-            "img", {"class": "product-image-photo lazy"}
-        )
-    ]
+    logging.info(f"Found {len(product_divs)} product items")
 
-    # Extract promotions
-    promotions = _extract_promotions(parser)
-
-    # Extract product data from JavaScript
-    products = _extract_product_data(parser)
-
-    # Combine all data
-    return _process_products(
-        products, product_links, product_images, promotions, counter
-    )
-
-
-def _extract_promotions(parser):
-    """Extract promotion data from price boxes"""
-    promotions = []
-
-    for item in parser.find_all("div", {"class": "price-box price-final_price"}):
-        promo_type = ""
-        description = ""
-
-        # Check for promo label
-        promo_labels = item.find_all("div", {"class": "label-promo custom"})
-        if len(promo_labels) > 0:
-            promo_type = "promo"
-            description = (
-                promo_labels[0].get_text()
-                .replace(" ", "")
-                .replace("\r\n", "")
-            )
-
-        # Check for discount label
-        discount_labels = item.find_all(
-            "div", {"class": "product product-promotion"}
-        )
-        if len(discount_labels) > 0:
-            promo_type = "discount"
-            description = (
-                discount_labels[0].get_text()
-                .replace(" ", "")
-                .replace("\r\n", "")
-            )
-
-        # Extract original price
-        price_spans = item.find_all("span", {"class": "price"})
-        original_price = price_spans[0].get_text() if price_spans else ""
-
-        promotions.append({
-            "type": promo_type,
-            "description": description,
-            "original_price": original_price
-        })
-
-    # Pad promotions list to ensure we have enough entries
-    # (Yogya pages typically show up to 80 items)
-    while len(promotions) < 80:
-        promotions.append({
-            "type": "",
-            "description": "",
-            "original_price": ""
-        })
-
-    return promotions
-
-
-def _extract_product_data(parser):
-    """Extract product data from JavaScript variable"""
-    pattern = re.compile(r'var dl4Objects = (.*);')
-    found = ""
-
-    for script in parser.find_all("script", {"src": False}):
-        if script and script.string:
-            match = pattern.search(script.string)
-            if match is not None:
-                found = match.group().replace("var dl4Objects =", "")
-                found = found.replace(";", "")
-                break
-
-    if not found:
-        logging.warning("Could not find product data in JavaScript")
-        return []
-
-    try:
-        data_raw = json.loads(found)
-    except json.JSONDecodeError as e:
-        logging.error(f"Error parsing product JSON: {str(e)}")
-        return []
-
-    # Extract items and deduplicate
     products = []
-    seen_ids = []
 
-    for grouped_item in data_raw:
-        data_ecommerce = grouped_item.get('ecommerce', {})
-        for item in data_ecommerce.get('items', []):
-            item_id = item.get('item_id')
-            if item_id and item_id not in seen_ids:
-                products.append(item)
-                seen_ids.append(item_id)
+    for div in product_divs:
+        product = _extract_product_from_html(div)
+        if product:
+            # Save to database
+            _save_product_to_db(product, counter)
+            products.append(product)
 
     return products
 
 
-def _process_products(products, links, images, promotions, counter):
-    """Process products and save to database"""
-    data_products = []
+def _extract_product_from_html(div):
+    """Extract product data from HTML div element"""
+    try:
+        # Extract product name link
+        name_link = div.find("a", class_="product-name")
+        if not name_link:
+            return None
 
-    for index, product in enumerate(products):
-        # Skip if we don't have corresponding data
-        if index >= len(links) or index >= len(images):
-            continue
-
-        # Add additional data to product
-        product['link'] = links[index]
-        product['image'] = images[index]
-        product['promotion'] = (
-            promotions[index] if index < len(promotions)
-            else {"type": "", "description": "", "original_price": ""}
+        # Extract SKU and name from onclick attribute
+        onclick = name_link.get('onclick', '')
+        match = re.search(
+            r"viewProduct\('([^']+)',\s*null,\s*'([^']*)',\s*'([^']*)'\)",
+            onclick
         )
 
-        # Save to database
-        _save_product_to_db(product, counter)
-        data_products.append(product)
+        if not match:
+            return None
 
-    return data_products
+        sku = match.group(1)
+        brand = match.group(2)
+        name = match.group(3)
+
+        # Extract link
+        link = name_link.get('href', '')
+
+        # Extract image
+        img_tag = div.find("img", class_="product-image")
+        image = img_tag.get('src', '') if img_tag else ''
+
+        # Extract prices
+        price_divs = div.find_all("div", class_="product-price")
+
+        original_price_raw = None
+        final_price_raw = None
+
+        # If there are 2 prices, first is original, second is discounted
+        # If there's 1 price, it's the final price
+        if len(price_divs) >= 2:
+            original_price_raw = price_divs[0].get_text(strip=True)
+            final_price_raw = price_divs[1].get_text(strip=True)
+        elif len(price_divs) == 1:
+            final_price_raw = price_divs[0].get_text(strip=True)
+
+        # Clean prices
+        original_price = cleanUpCurrency(original_price_raw or '0')
+        final_price = cleanUpCurrency(final_price_raw or '0')
+
+        # Extract discount percentage
+        discount_badge = div.find("span", class_="badge bg-danger")
+        discount_pct = None
+        discount_desc = ""
+
+        if discount_badge:
+            discount_text = discount_badge.get_text(strip=True)
+            pct_match = re.search(r'-(\d+)%', discount_text)
+            if pct_match:
+                discount_pct = int(pct_match.group(1))
+            discount_desc = discount_text
+
+        # Calculate discount percentage if not found
+        if (not discount_pct and original_price and final_price and
+                original_price > final_price):
+            discount_pct = int(
+                ((original_price - final_price) / original_price) * 100
+            )
+
+        return {
+            'item_id': sku,
+            'item_name': name,
+            'item_list_name': brand,
+            'price': final_price or original_price,
+            'original_price': original_price,
+            'discount_price': final_price if original_price else None,
+            'discount_percentage': discount_pct,
+            'discount_description': discount_desc,
+            'link': link,
+            'image': image,
+        }
+
+    except Exception as e:
+        logging.error(f"Error extracting product: {str(e)}")
+        return None
 
 
 def _save_product_to_db(product, counter):
@@ -233,10 +189,8 @@ def _save_product_to_db(product, counter):
     item_id = product.get('item_id', '')
     item_name = product.get('item_name', '')
     item_list_name = product.get('item_list_name', '')
-    price = cleanUpCurrency(product.get('price', '0'))
-    original_price = cleanUpCurrency(
-        product.get('promotion', {}).get('original_price', '0')
-    )
+    price = product.get('price', 0)
+    original_price = product.get('original_price', 0)
 
     # Check if item exists
     req_query = {
@@ -284,10 +238,12 @@ def _save_product_to_db(product, counter):
         )
         counter['newPrices'] += 1
 
-    # Handle discounts (if there's a promotion with original price)
+    # Handle discounts (if there's an original price and it's higher)
     if original_price > 0 and price < original_price:
-        # Calculate discount percentage
-        discount_percent = int(((original_price - price) / original_price) * 100)
+        discount_percent = product.get(
+            'discount_percentage',
+            int(((original_price - price) / original_price) * 100)
+        )
 
         req_query = {
             'script': (
@@ -308,7 +264,7 @@ def _save_product_to_db(product, counter):
                 price,
                 original_price,
                 discount_percent,
-                product.get('promotion', {}).get('description', ''),
+                product.get('discount_description', ''),
                 datetime_today
             )
             counter['newDiscounts'] += 1
@@ -317,44 +273,25 @@ def _save_product_to_db(product, counter):
 def getCategories():
     """
     Main entry point - scrape all categories from Yogya Online
+    Uses hardcoded category URLs from the new supermarket subdomain
     """
-    target_url = "https://www.yogyaonline.co.id/"
+    # Hardcoded category URLs from supermarket.yogyaonline.co.id
+    # These are the main product categories
+    categories = [
+        "https://supermarket.yogyaonline.co.id/supermarket/fresh-buah-sayur-sayursayuran/category",  # noqa: E501
+        "https://supermarket.yogyaonline.co.id/supermarket/fresh-buah-sayur-buahbuahan/category",  # noqa: E501
+        "https://supermarket.yogyaonline.co.id/supermarket/hot-deals-promo-minggu-ini-harbolnas/category",  # noqa: E501
+        "https://supermarket.yogyaonline.co.id/supermarket/hot-deals-flash-sale-12-13/category",  # noqa: E501
+        "https://supermarket.yogyaonline.co.id/supermarket/hot-deals-produk-terbaru/category",  # noqa: E501
+        "https://supermarket.yogyaonline.co.id/supermarket/hot-deals-produk-rekomendasi/category",  # noqa: E501
+        "https://supermarket.yogyaonline.co.id/supermarket/makanan-bahan-masakan-cooking-oil/category",  # noqa: E501
+        "https://supermarket.yogyaonline.co.id/supermarket/produk-import-makanan-import-cemilan/category",  # noqa: E501
+        "https://supermarket.yogyaonline.co.id/supermarket/official-store-yoa-pasti-hemat-pasti-hemat/category",  # noqa: E501
+    ]
 
-    logging.info("Fetching categories from Yogya Online...")
-
-    # Create cloudscraper session
-    scraper = cloudscraper.create_scraper()
-    _rate_limit()
-
-    try:
-        response = scraper.get(target_url, timeout=30)
-        response.raise_for_status()
-    except Exception as e:
-        error_msg = f"Error fetching categories: {str(e)}"
-        logging.error(error_msg)
-        return error_msg
-
-    parser = BeautifulSoup(response.text, 'html.parser')
-    category_elements = parser.find_all("li", {"id": re.compile('vesitem-*')})
-
-    categories = []
-    for cat in category_elements:
-        link = cat.find('a')
-        if not link:
-            continue
-
-        href = link.get('href')
-
-        # Skip invalid links
-        if not href or href == "#":
-            continue
-        if "blog-yogya-online" in href:
-            continue
-
-        if href not in categories:
-            categories.append(href)
-
-    logging.info(f"Found {len(categories)} categories")
+    logging.info(
+        f"Using {len(categories)} hardcoded categories from Yogya Online"
+    )
 
     # Initialize counter
     counter = {
