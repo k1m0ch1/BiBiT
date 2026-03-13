@@ -42,9 +42,16 @@ def search(search: Search):
     now = datetime.now(pytz.timezone("Asia/Jakarta"))
     today = now.strftime("%Y-%m-%d")
     querySearch = f'%{search.query}%'
-    searchCondition =  (db['items']['source'] != 'alfacart') & (db['items']['name'] |LIKE| querySearch) & (db['prices']['created_at'] |LIKE| f'{today}%')
-    if search.source is not None:
-        searchCondition = (searchCondition & (db['items']['source'] == search.source)) if len(search.source) > 0 else searchCondition
+
+    # Base condition: name search + date filter
+    searchCondition = (db['items']['name'] |LIKE| querySearch) & (db['prices']['created_at'] |LIKE| f'{today}%')
+
+    # Source filter: if user specifies source, use it; otherwise exclude alfacart (deprecated source)
+    if search.source is not None and len(search.source) > 0:
+        searchCondition = searchCondition & (db['items']['source'] == search.source)
+    else:
+        # No source specified: exclude deprecated alfacart source
+        searchCondition = searchCondition & (db['items']['source'] != 'alfacart')
     items = db.select(
         TABLE='items',
         SELECT=[
