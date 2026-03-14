@@ -1,22 +1,17 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from db import DBAPI
 import sqllex as sx
 from sqllex.constants import  ON, LIKE
 import shortuuid
 from pydantic import BaseModel
 from typing import Union
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 
 
 db = DBAPI
 
 router = APIRouter()
-
-class Search(BaseModel):
-    query: str
-    source: Union[str, None] = None
-    date: Union[str, None] = None
 
 class Sama(BaseModel):
     item_id: str
@@ -34,21 +29,34 @@ def stat():
 def sama(sama: Sama):
     now = datetime.now(pytz.timezone("Asia/Jakarta"))
     db["item_item"].insert(
-        shortuuid.uuid(), 
+        shortuuid.uuid(),
         sama.item_id, sama.with_item_id, "PROPOSED", now.strftime("%Y-%m-%d %H:%M:%S"), now.strftime("%Y-%m-%d %H:%M:%S"))
 
-@router.post("/search")
-def search(search: Search):
+@router.get("/search")
+def search(
+    query: str = Query(...),
+    source: Union[str, None] = Query(default=None),
+    date: Union[str, None] = Query(default=None),
+):
     now = datetime.now(pytz.timezone("Asia/Jakarta"))
-    today = now.strftime("%Y-%m-%d")
-    querySearch = f'%{search.query}%'
+
+    if date == "yesterday":
+        date_filter = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    elif date is not None and date not in ("today",):
+        # specific date passed as YYYY-MM-DD
+        date_filter = date
+    else:
+        # default: today
+        date_filter = now.strftime("%Y-%m-%d")
+
+    querySearch = f'%{query}%'
 
     # Base condition: name search + date filter
-    searchCondition = (db['items']['name'] |LIKE| querySearch) & (db['prices']['created_at'] |LIKE| f'{today}%')
+    searchCondition = (db['items']['name'] |LIKE| querySearch) & (db['prices']['created_at'] |LIKE| f'{date_filter}%')
 
     # Source filter: if user specifies source, use it; otherwise exclude alfacart (deprecated source)
-    if search.source is not None and len(search.source) > 0:
-        searchCondition = searchCondition & (db['items']['source'] == search.source)
+    if source is not None and len(source) > 0:
+        searchCondition = searchCondition & (db['items']['source'] == source)
     else:
         # No source specified: exclude deprecated alfacart source
         searchCondition = searchCondition & (db['items']['source'] != 'alfacart')
