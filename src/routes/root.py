@@ -50,28 +50,30 @@ def search(
 
     if source is not None and len(source) > 0:
         sql = """
-            SELECT items.id, items.name, items.link, items.source, items.image, prices.price
+            SELECT items.id, items.name, items.link, items.source, items.image, MIN(prices.price) as price
             FROM items
             INNER JOIN prices ON items.id = prices.items_id
             WHERE items.name LIKE ?
               AND prices.created_at >= ?
               AND prices.created_at <= ?
+              AND prices.price > 99
               AND items.source = ?
             GROUP BY items.name
-            ORDER BY prices.price ASC
+            ORDER BY price ASC
         """
         params = (f'%{query}%', date_start, date_end, source)
     else:
         sql = """
-            SELECT items.id, items.name, items.link, items.source, items.image, prices.price
+            SELECT items.id, items.name, items.link, items.source, items.image, MIN(prices.price) as price
             FROM items
             INNER JOIN prices ON items.id = prices.items_id
             WHERE items.name LIKE ?
               AND prices.created_at >= ?
               AND prices.created_at <= ?
+              AND prices.price > 99
               AND items.source != 'alfacart'
             GROUP BY items.name
-            ORDER BY prices.price ASC
+            ORDER BY price ASC
         """
         params = (f'%{query}%', date_start, date_end)
 
