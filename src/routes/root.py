@@ -50,9 +50,13 @@ def search(
         date_filter = now.strftime("%Y-%m-%d")
 
     querySearch = f'%{query}%'
+    date_start = f'{date_filter} 00:00:00'
+    date_end = f'{date_filter} 23:59:59'
 
-    # Base condition: name search + date filter
-    searchCondition = (db['items']['name'] |LIKE| querySearch) & (db['prices']['created_at'] |LIKE| f'{date_filter}%')
+    # Base condition: name search + date range filter
+    searchCondition = (db['items']['name'] |LIKE| querySearch) & \
+                      (db['prices']['created_at'] >= date_start) & \
+                      (db['prices']['created_at'] <= date_end)
 
     # Source filter: if user specifies source, use it; otherwise exclude alfacart (deprecated source)
     if source is not None and len(source) > 0:
